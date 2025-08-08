@@ -1,0 +1,13 @@
+@echo off
+echo Stopping backend server...
+taskkill /F /IM node.exe >nul 2>&1
+
+echo Waiting for port to be available...
+timeout /t 2 >nul
+
+echo Starting backend server...
+cd /d "C:\satinalma\procurement_system_nodejs"
+start "Backend Server" cmd /k "npm start"
+
+echo Backend server starting in new window...
+pause

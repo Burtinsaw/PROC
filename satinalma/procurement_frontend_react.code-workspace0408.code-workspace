@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "procurement_frontend_react"
+		},
+		{
+			"path": "procurement_system_nodejs"
+		}
+	],
+	"settings": {
+		"codium.codeCompletion.enable": true
+	}
+}
