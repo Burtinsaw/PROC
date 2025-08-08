@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppBar, Toolbar, IconButton, Typography, InputBase, Badge, Avatar, Box } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, InputBase, Badge, Avatar, Box, Button } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { Menu as MenuIcon, Search as SearchIcon, Notifications as NotificationsIcon, Brightness4, Brightness7 } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -103,6 +103,9 @@ const Header = ({ open, handleDrawerOpen, drawerWidth }) => {
           <IconButton onClick={toggleTheme} color="inherit">
             {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
+          <Button color="inherit" href="/change-password" sx={{ textTransform: 'none', mr: 1 }}>
+            Şifre Değiştir
+          </Button>
           <IconButton
             size="large"
             aria-label="show 17 new notifications"

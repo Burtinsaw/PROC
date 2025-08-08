@@ -7,6 +7,7 @@ import SupplierManagement from '../pages/SupplierManagement';
 import Forbidden403 from '../pages/Forbidden403';
 import PermissionGuard from '../components/rbac/PermissionGuard';
 import UserManagement from '../components/rbac/UserManagement';
+import ChangePassword from '../pages/ChangePassword';
 import ModernLoginScreen from '../pages/ModernLoginScreen';
 import PrivateRoute from './PrivateRoute';
 
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
       {
         path: 'suppliers',
         element: <SupplierManagement />,
+      },
+      {
+        path: 'change-password',
+        element: <ChangePassword />,
       },
       {
         path: 'admin',
