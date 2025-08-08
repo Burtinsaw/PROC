@@ -21,12 +21,9 @@ const ProcurementLayout = ({ title }) => {
     <MuiThemeProvider theme={theme}>
       <Box sx={{ display: 'flex', minHeight: '100vh' }}>
         <CssBaseline />
-        
+
         {/* Header */}
-        <ProcurementHeader 
-          onDrawerToggle={handleDrawerToggle} 
-          title={title}
-        />
+        <ProcurementHeader onDrawerToggle={handleDrawerToggle} title={title} />
 
         {/* Sidebar */}
         <ProcurementSidebar
@@ -54,7 +51,9 @@ const ProcurementLayout = ({ title }) => {
             overflow: 'auto'
           }}
         >
-          <Outlet />
+          <Box sx={{ pt: 2, pr: 2, pb: 2, pl: '7px' }}>
+            <Outlet />
+          </Box>
         </Box>
       </Box>
     </MuiThemeProvider>

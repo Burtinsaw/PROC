@@ -80,11 +80,16 @@ const DashboardDefault = () => {
           Satın alma süreçlerinizi buradan takip edebilir ve yeni talepler oluşturabilirsiniz.
         </Typography>
       </Box>
-
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {stats.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid
+            key={index}
+            size={{
+              xs: 12,
+              sm: 6,
+              md: 3
+            }}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -109,10 +114,13 @@ const DashboardDefault = () => {
           </Grid>
         ))}
       </Grid>
-
       <Grid container spacing={3}>
         {/* Quick Actions */}
-        <Grid item xs={12} md={4}>
+        <Grid
+          size={{
+            xs: 12,
+            md: 4
+          }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
@@ -149,7 +157,11 @@ const DashboardDefault = () => {
         </Grid>
 
         {/* Recent Requests */}
-        <Grid item xs={12} md={8}>
+        <Grid
+          size={{
+            xs: 12,
+            md: 8
+          }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>

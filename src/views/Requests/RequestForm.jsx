@@ -313,14 +313,18 @@ const UnifiedRequestSystem = () => {
         return (
           <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <InfoIcon color="primary" />
                   Talep Bilgileri
                 </Typography>
               </Grid>
               
-              <Grid item xs={12} md={6}>
+              <Grid
+                size={{
+                  xs: 12,
+                  md: 6
+                }}>
                 <TextField
                   fullWidth
                   label="Talep Alıcı Firma/Kişi (Müşteri)"
@@ -332,7 +336,11 @@ const UnifiedRequestSystem = () => {
                 />
               </Grid>
               
-              <Grid item xs={12} md={6}>
+              <Grid
+                size={{
+                  xs: 12,
+                  md: 6
+                }}>
                 <TextField
                   fullWidth
                   label="Talebi Gönderen (Adı)"
@@ -344,7 +352,7 @@ const UnifiedRequestSystem = () => {
                 />
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <TextField
                   fullWidth
                   label="Talep Başlığı"
@@ -356,7 +364,7 @@ const UnifiedRequestSystem = () => {
                 />
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <TextField
                   fullWidth
                   multiline
@@ -368,7 +376,11 @@ const UnifiedRequestSystem = () => {
                 />
               </Grid>
               
-              <Grid item xs={12} md={6}>
+              <Grid
+                size={{
+                  xs: 12,
+                  md: 6
+                }}>
                 <TextField
                   fullWidth
                   type="date"
@@ -393,7 +405,11 @@ const UnifiedRequestSystem = () => {
               </Typography>
               
               <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid item xs={12} md={8}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    md: 8
+                  }}>
                   <Box sx={{ 
                     border: '2px dashed',
                     borderColor: theme.palette.divider,
@@ -432,7 +448,11 @@ const UnifiedRequestSystem = () => {
                   </Box>
                 </Grid>
                 
-                <Grid item xs={12} md={4}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    md: 4
+                  }}>
                   <FormControl fullWidth sx={{ mb: 2 }}>
                     <InputLabel>Çeviri Dili</InputLabel>
                     <Select
@@ -471,7 +491,6 @@ const UnifiedRequestSystem = () => {
                 </Box>
               )}
             </Paper>
-
             {/* Çıkarılan Ürünler */}
             {formData.extractedProducts.length > 0 && (
               <Paper sx={{ p: 3, mb: 3 }}>
@@ -536,7 +555,6 @@ const UnifiedRequestSystem = () => {
                 </TableContainer>
               </Paper>
             )}
-
             {/* Talebe Eklenen Ürünler */}
             {formData.items.length > 0 && (
               <Paper sx={{ p: 3 }}>
@@ -581,7 +599,6 @@ const UnifiedRequestSystem = () => {
                 </TableContainer>
               </Paper>
             )}
-
             {errors.items && (
               <Alert severity="error" sx={{ mt: 2 }}>
                 {errors.items}
@@ -594,9 +611,8 @@ const UnifiedRequestSystem = () => {
         return (
           <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
             <Typography variant="h6" gutterBottom>Talep Özeti</Typography>
-            
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1" gutterBottom color="primary">
@@ -615,7 +631,7 @@ const UnifiedRequestSystem = () => {
                 </Card>
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1" gutterBottom color="primary">

@@ -1,239 +1,146 @@
-import React, { createContext, useEffect, useReducer } from 'react';
+import React, { createContext, useState, useMemo, useEffect, useRef } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import axios from '../utils/axios'; // Configured axios instance
 
-// reducer - state management
-import { LOGIN, LOGOUT, INITIALIZE } from './auth-reducer/actions';
-import authReducer from './auth-reducer/auth';
+const AuthContext = createContext();
 
-// project imports
-import Loader from '../components/Loader';
-import axios from '../utils/axios';
-
-// constant
-const initialState = {
-  isLoggedIn: false,
-  isInitialized: false,
-  user: null
-};
-
-const verifyToken = (serviceToken) => {
-  if (!serviceToken || typeof serviceToken !== 'string') {
-    return false;
-  }
-  
+const isValidToken = (token) => {
+  if (!token) return false;
   try {
-    const decoded = jwtDecode(serviceToken);
-    
-    // Token'ın geçerlilik süresini kontrol et
+    const decoded = jwtDecode(token);
     const currentTime = Date.now() / 1000;
-    const isExpired = decoded.exp <= currentTime;
-    
-    if (isExpired) {
-      console.warn('🔓 Token expired, removing from storage');
-      localStorage.removeItem('serviceToken');
-      return false;
-    }
-    
-    // Token 5 dakika içinde expire olacaksa uyar
-    const timeUntilExpiry = decoded.exp - currentTime;
-    if (timeUntilExpiry < 300) { // 5 dakika
-      console.warn('⏰ Token expires in less than 5 minutes');
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('❌ Token verification failed:', error.message);
-    localStorage.removeItem('serviceToken');
+    return decoded.exp > currentTime;
+  } catch {
     return false;
   }
 };
-
-const setSession = (serviceToken) => {
-  if (serviceToken) {
-    try {
-      // Token geçerliliğini kontrol et
-      if (!verifyToken(serviceToken)) {
-        console.error('❌ Invalid token provided to setSession');
-        return;
-      }
-      
-      localStorage.setItem('serviceToken', serviceToken);
-      axios.defaults.headers.common.Authorization = `Bearer ${serviceToken}`;
-      
-      console.log('✅ Session token set successfully');
-    } catch (error) {
-      console.error('❌ Failed to set session:', error);
-    }
-  } else {
-    localStorage.removeItem('serviceToken');
-    delete axios.defaults.headers.common.Authorization;
-    console.log('🔓 Session cleared');
-  }
-};
-
-// ==============================|| JWT CONTEXT & PROVIDER ||============================== //
-
-const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const initRan = useRef(false);
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        const serviceToken = localStorage.getItem('serviceToken');
-        
-        if (serviceToken && verifyToken(serviceToken)) {
-          setSession(serviceToken);
-          
-          // Backend'den kullanıcı bilgilerini al
-          try {
-            const response = await axios.get('/auth/profile');
-            const user = response.data.data || response.data.user;
-            
-            dispatch({
-              type: LOGIN,
-              payload: {
-                isLoggedIn: true,
-                user
-              }
-            });
-          } catch (profileError) {
-            console.error('❌ Failed to fetch user profile:', profileError);
-            // Profile çekilemezse token'ı geçersiz say
-            setSession(null);
-            dispatch({ type: LOGOUT });
+  if (initRan.current) return; // StrictMode double-mount guard
+  initRan.current = true;
+  const initializeAuth = async () => {
+      const token = localStorage.getItem('serviceToken');
+      if (token && isValidToken(token)) {
+        axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+        try {
+          const profile = await axios.get('/users/profile');
+          const u = profile.data?.user || profile.data?.data;
+          if (u) {
+            setUser(u);
+            setIsAuthenticated(true);
+          } else {
+            logout();
           }
-        } else {
-          console.log('🔓 No valid token found, logging out');
-          setSession(null);
-          dispatch({ type: LOGOUT });
+    } catch (err) {
+          const status = err?.response?.status;
+          if (status === 401 || status === 403) {
+            logout();
+          } else {
+            // 429/Network vb: oturumu koru, kullanıcıyı token’dan kısmen yükle
+            try {
+              const decoded = jwtDecode(token);
+              setUser((prev) => prev || decoded || null);
+            } catch {
+              // ignore decode error
+            }
+            setIsAuthenticated(true);
+          }
         }
-      } catch (err) {
-        console.error('❌ Auth initialization failed:', err);
-        setSession(null);
-        dispatch({ type: LOGOUT });
-      } finally {
-        dispatch({ type: INITIALIZE });
+      } else {
+  localStorage.removeItem('serviceToken');
+        delete axios.defaults.headers.common.Authorization;
       }
+      setIsLoading(false);
     };
-
-    init();
+    initializeAuth();
   }, []);
 
   const login = async (username, password) => {
     try {
-      if (!username || !password) {
-        throw new Error('Username and password are required');
+  // Backend server mounts auth routes at /api/auth in server.js; axios baseURL already points to /api
+  const response = await axios.post('/auth/login', { username, password });
+      if (response.data?.success && response.data.token) {
+        const { token, user: userData } = response.data;
+  localStorage.setItem('serviceToken', token);
+        axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+        setUser(userData);
+        setIsAuthenticated(true);
+        return { success: true };
       }
-
-      const response = await axios.post('/auth/login', {
-        username,
-        password
-      });
-      
-      if (!response.data.success || !response.data.token) {
-        throw new Error(response.data.message || 'Invalid response from server');
-      }
-      
-      const { token, user } = response.data;
-      setSession(token);
-      
-      dispatch({
-        type: LOGIN,
-        payload: {
-          isLoggedIn: true,
-          user
-        }
-      });
-      
-      console.log('✅ Login successful for user:', user.username);
-      return { success: true, user };
-      
+      return { success: false, message: response.data?.message || 'Giriş başarısız' };
     } catch (error) {
-      console.error('❌ Login failed:', error);
-      
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          'Giriş yapılırken bir hata oluştu';
-      
-      return { 
-        success: false, 
-        message: errorMessage 
-      };
+      const message = error?.response?.data?.message || error?.message || 'Giriş hatası';
+      return { success: false, message };
     }
   };
 
-  const register = async (email, password, firstName, lastName) => {
+  const refreshProfile = async () => {
     try {
-      const response = await axios.post('/api/account/register', {
-        email,
-        password,
-        firstName,
-        lastName
-      });
-      
-      const { serviceToken, user } = response.data;
-      setSession(serviceToken);
-      
-      dispatch({
-        type: LOGIN,
-        payload: {
-          isLoggedIn: true,
-          user
-        }
-      });
-      
-      return { success: true };
-    } catch (error) {
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Kayıt olurken bir hata oluştu' 
-      };
+      const res = await axios.get('/users/profile');
+      const u = res.data?.user || res.data?.data || null;
+      if (u) setUser(u);
+      return u;
+    } catch (e) {
+      return null;
     }
   };
 
-  const logout = async () => {
-    try {
-      // Backend'e logout isteği gönder
-      await axios.post('/auth/logout');
-    } catch (error) {
-      console.error('❌ Logout request failed:', error);
-      // Backend hatası olsa da local logout devam etsin
-    } finally {
-      setSession(null);
-      dispatch({ type: LOGOUT });
-      console.log('🔓 User logged out successfully');
-    }
+  const logout = () => {
+  localStorage.removeItem('serviceToken');
+    delete axios.defaults.headers.common.Authorization;
+    setUser(null);
+    setIsAuthenticated(false);
   };
 
   const resetPassword = async (email) => {
     try {
-      await axios.post('/api/account/reset-password', { email });
-      return { success: true };
-    } catch (error) {
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Şifre sıfırlama isteği gönderilirken bir hata oluştu' 
-      };
+      const res = await axios.post('/users/forgot-password', { email });
+      return { success: true, message: res.data?.message };
+    } catch (err) {
+      const msg = err?.response?.data?.message || err.message || 'Şifre sıfırlama hatası';
+      return { success: false, message: msg };
     }
   };
 
-  if (!state.isInitialized) return <Loader />;
+  const updateProfile = async (payload) => {
+    try {
+      const allowed = [
+        'firstName','lastName','email','department','designation','phoneNumber','dateOfBirth',
+        'address1','address2','city','state','country','postalCode'
+      ];
+      const body = Object.fromEntries(Object.entries(payload).filter(([k]) => allowed.includes(k)));
+      const res = await axios.put('/users/profile', body);
+      const updated = res.data?.user || res.data?.data || null;
+      if (updated) setUser(updated);
+      return { success: true, user: updated, message: res.data?.message };
+    } catch (err) {
+      const msg = err?.response?.data?.message || err.message || 'Profil güncelleme hatası';
+      return { success: false, message: msg };
+    }
+  };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        ...state,
-        login,
-        logout,
-        register,
-        resetPassword
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      user,
+      isAuthenticated,
+      isLoading,
+      login,
+      logout,
+      resetPassword,
+  refreshProfile,
+      updateProfile,
+    }),
+    [user, isAuthenticated, isLoading]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;

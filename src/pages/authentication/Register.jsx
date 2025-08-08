@@ -82,15 +82,17 @@ const Register = () => {
       <Typography variant="body2" sx={{ textAlign: 'center', mb: 3, color: 'text.secondary' }}>
         Yeni hesap oluşturun
       </Typography>
-
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
-
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6
+          }}>
           <TextField
             margin="normal"
             required
@@ -110,7 +112,11 @@ const Register = () => {
             }}
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6
+          }}>
           <TextField
             margin="normal"
             required
@@ -131,7 +137,6 @@ const Register = () => {
           />
         </Grid>
       </Grid>
-
       <TextField
         margin="normal"
         required
@@ -150,7 +155,6 @@ const Register = () => {
           ),
         }}
       />
-
       <TextField
         margin="normal"
         required
@@ -181,7 +185,6 @@ const Register = () => {
           ),
         }}
       />
-
       <TextField
         margin="normal"
         required
@@ -211,7 +214,6 @@ const Register = () => {
           ),
         }}
       />
-
       <Button
         type="submit"
         fullWidth
@@ -221,7 +223,6 @@ const Register = () => {
       >
         {loading ? 'Kayıt oluşturuluyor...' : 'Kayıt Ol'}
       </Button>
-
       <Box sx={{ textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
           Zaten hesabınız var mı?{' '}

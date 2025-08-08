@@ -44,7 +44,7 @@ const menuItems = [
     id: 'dashboard',
     title: 'Kontrol Paneli',
     icon: LayoutDashboard,
-    path: '/dashboard',
+    path: '/',
     badge: null
   },
   {
@@ -54,22 +54,15 @@ const menuItems = [
     badge: 12,
     subItems: [
       { id: 'new-request', title: 'Yeni Talep', icon: FileText, path: '/requests/new' },
-      { id: 'pending-requests', title: 'Bekleyen Talepler', icon: Clock, path: '/requests/pending', badge: 8 },
-      { id: 'approved-requests', title: 'Onaylanan Talepler', icon: CheckCircle, path: '/requests/approved' },
-      { id: 'rejected-requests', title: 'Reddedilen Talepler', icon: AlertTriangle, path: '/requests/rejected' },
-      { id: 'all-requests', title: 'Tüm Talepler', icon: FileText, path: '/requests/all' }
+  { id: 'all-requests', title: 'Tüm Talepler', icon: FileText, path: '/requests' }
     ]
   },
   {
-    id: 'procurement',
-    title: 'Satın Alma',
+    id: 'rfq',
+    title: 'RFQ Yönetimi',
     icon: Package,
-    badge: 5,
     subItems: [
-      { id: 'supplier-search', title: 'Tedarikçi Arama', icon: Search, path: '/procurement/suppliers' },
-      { id: 'quotations', title: 'Teklifler', icon: DollarSign, path: '/procurement/quotations', badge: 3 },
-      { id: 'comparison', title: 'Teklif Karşılaştırma', icon: BarChart3, path: '/procurement/comparison' },
-      { id: 'proforma', title: 'Proforma Yönetimi', icon: FileText, path: '/procurement/proforma' }
+      { id: 'rfqs', title: 'RFQ Listesi', icon: DollarSign, path: '/rfqs' }
     ]
   },
   {
@@ -89,13 +82,7 @@ const menuItems = [
     icon: Users,
     path: '/suppliers'
   },
-  {
-    id: 'translation',
-    title: 'Çeviri Merkezi',
-    icon: Globe,
-    path: '/translation',
-    badge: 4
-  },
+  // Ek modüller hazır olduğunda açılabilir
   {
     id: 'reports',
     title: 'Raporlar',

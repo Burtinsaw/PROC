@@ -33,10 +33,11 @@ import {
 } from 'lucide-react';
 import AuthContext from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import ExchangeRatesWidget from './ExchangeRatesWidget';
 
 const ProcurementHeader = ({ onDrawerToggle, title = "Kontrol Paneli" }) => {
   const muiTheme = useMuiTheme();
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { mode, toggleTheme } = useTheme();
   const { logout } = useContext(AuthContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationAnchor, setNotificationAnchor] = useState(null);
@@ -73,9 +74,7 @@ const ProcurementHeader = ({ onDrawerToggle, title = "Kontrol Paneli" }) => {
     }
   };
 
-  const toggleDarkMode = () => {
-    toggleTheme();
-  };
+  const toggleDarkMode = () => toggleTheme();
 
   const notifications = [
     {
@@ -205,7 +204,10 @@ const ProcurementHeader = ({ onDrawerToggle, title = "Kontrol Paneli" }) => {
 
         {/* Right Section */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {/* Translation Status */}
+          {/* Exchange Rates & Translation Status */}
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
+            <ExchangeRatesWidget />
+          </Box>
           <Tooltip title="Çeviri Durumu">
             <Chip
               icon={<Globe size={16} />}
@@ -247,7 +249,7 @@ const ProcurementHeader = ({ onDrawerToggle, title = "Kontrol Paneli" }) => {
                 }
               }}
             >
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+              {mode === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </IconButton>
           </Tooltip>
 

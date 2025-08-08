@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { toast } from 'sonner';
 
 const axiosServices = axios.create({
-  baseURL: import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_APP_API_URL || '/api',
   timeout: 10000, // 10 saniye timeout
   headers: {
     'Content-Type': 'application/json'
@@ -11,7 +12,7 @@ const axiosServices = axios.create({
 // Request interceptor for API calls
 axiosServices.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('serviceToken');
+  const token = localStorage.getItem('serviceToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -48,19 +49,24 @@ axiosServices.interceptors.response.use(
       message: response?.data?.message || message
     });
     
-    // Unauthorized durumunda token'ı temizle ve login'e yönlendir
+  // Unauthorized durumunda token'ı temizle ve login'e yönlendir
     if (response?.status === 401) {
       localStorage.removeItem('serviceToken');
       
       // Eğer zaten login sayfasında değilse yönlendir
       if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/auth/login';
+        window.location.href = '/login';
       }
     }
     
-    // Network hatası durumunda kullanıcıyı bilgilendir
-    if (!response) {
+    // Hata bildirimleri (401 hariç)
+    if (response?.status === 429) {
+      toast.warning('Çok fazla istek, lütfen biraz bekleyin.');
+    } else if (response && response?.status >= 400 && response?.status !== 401) {
+      toast.error(response?.data?.message || `Hata: ${response.status}`);
+    } else if (!response) {
       console.error('🌐 Network Error: Server unreachable');
+      toast.error('Sunucuya ulaşılamıyor');
     }
     
     return Promise.reject(error);

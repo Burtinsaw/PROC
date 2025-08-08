@@ -1,5 +1,8 @@
 import { RouterProvider } from 'react-router-dom';
 import { CssBaseline } from '@mui/material';
+import { Toaster } from 'sonner';
+import ErrorBoundary from './components/common/ErrorBoundary';
+import BackendStatus from './components/BackendStatus';
 
 // project imports
 import router from './routes/index';
@@ -12,9 +15,13 @@ function App() {
   return (
     <ThemeProvider>
       <CssBaseline />
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
+      <Toaster richColors position="top-center" />
+      <ErrorBoundary>
+        <AuthProvider>
+          <BackendStatus />
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

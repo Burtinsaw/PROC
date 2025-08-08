@@ -149,12 +149,15 @@ const RequestList = () => {
           Yeni Talep
         </Button>
       </Box>
-
       {/* Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} md={6}>
+            <Grid
+              size={{
+                xs: 12,
+                md: 6
+              }}>
               <TextField
                 fullWidth
                 placeholder="Talep ara..."
@@ -169,7 +172,11 @@ const RequestList = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid
+              size={{
+                xs: 12,
+                md: 6
+              }}>
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
                 <Button variant="outlined">Filtrele</Button>
                 <Button variant="outlined">Dışa Aktar</Button>
@@ -178,14 +185,12 @@ const RequestList = () => {
           </Grid>
         </CardContent>
       </Card>
-
       {/* Results Summary */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="body2" color="text.secondary">
           {filteredRequests.length} talep bulundu
         </Typography>
       </Box>
-
       {/* Table */}
       <Card>
         <TableContainer component={Paper} elevation={0}>
@@ -252,7 +257,6 @@ const RequestList = () => {
           </Table>
         </TableContainer>
       </Card>
-
       {/* Action Menu */}
       <Menu
         anchorEl={anchorEl}
@@ -275,7 +279,6 @@ const RequestList = () => {
           Sil
         </MenuItem>
       </Menu>
-
       {/* Empty State */}
       {filteredRequests.length === 0 && (
         <Box sx={{ textAlign: 'center', py: 8 }}>

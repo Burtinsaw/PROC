@@ -1,392 +1,177 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { createTheme } from '@mui/material/styles';
+import React, { createContext, useState, useMemo, useContext, useEffect } from 'react';
+import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
+
+const ThemeContext = createContext();
+
+// Temel gölge ve gradient varyantları
+const baseDesignTokens = {
+  shape: { borderRadius: 14 },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", Arial, sans-serif',
+    fontWeightRegular: 500,
+    fontWeightMedium: 600,
+    fontWeightBold: 700,
+    h1: { fontSize: '2.4rem', fontWeight: 700, letterSpacing: '-0.5px' },
+    h2: { fontSize: '1.95rem', fontWeight: 700, letterSpacing: '-0.5px' },
+    h3: { fontSize: '1.55rem', fontWeight: 600 },
+    h4: { fontSize: '1.25rem', fontWeight: 600 },
+    h5: { fontSize: '1rem', fontWeight: 600 },
+    h6: { fontSize: '0.85rem', fontWeight: 600, letterSpacing: '.5px' },
+    subtitle1: { fontSize: '.9rem', fontWeight: 600 },
+    body1: { fontSize: '.875rem', lineHeight: 1.55 },
+    body2: { fontSize: '.75rem', lineHeight: 1.6 }
+  },
+  customShadows: {
+    primary: '0 4px 12px -2px rgba(66,153,225,0.5)',
+    card: '0 4px 18px -2px rgba(0,0,0,0.12)',
+    inset: 'inset 0 1px 0 0 rgba(255,255,255,0.06)'
+  },
+  gradient: (c1, c2) => `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`
+};
 
 // Light Theme
-const lightTheme = createTheme({
+const lightThemeOptions = {
   palette: {
     mode: 'light',
-    primary: {
-      main: '#1a365d',
-      light: '#2d5a8a',
-      dark: '#0f2027',
-      contrastText: '#ffffff'
-    },
-    secondary: {
-      main: '#e53e3e',
-      light: '#fc8181',
-      dark: '#c53030',
-      contrastText: '#ffffff'
-    },
-    success: {
-      main: '#38a169',
-      light: '#68d391',
-      dark: '#2f855a'
-    },
-    warning: {
-      main: '#ed8936',
-      light: '#fbb946',
-      dark: '#dd6b20'
-    },
-    info: {
-      main: '#3182ce',
-      light: '#63b3ed',
-      dark: '#2c5282'
-    },
-    background: {
-      default: '#f7fafc',
-      paper: '#ffffff'
-    },
-    grey: {
-      50: '#f7fafc',
-      100: '#edf2f7',
-      200: '#e2e8f0',
-      300: '#cbd5e0',
-      400: '#a0aec0',
-      500: '#718096',
-      600: '#4a5568',
-      700: '#2d3748',
-      800: '#1a202c',
-      900: '#171923'
-    },
-    text: {
-      primary: '#2d3748',
-      secondary: '#4a5568'
-    },
-    divider: '#e2e8f0'
+    primary: { main: '#145ac8', light: '#3d7fee', dark: '#0d3c82', contrastText: '#fff' },
+    secondary: { main: '#fb5b5a', light: '#ff8080', dark: '#c42423', contrastText: '#fff' },
+    success: { main: '#2e7d32' },
+    info: { main: '#2684ff' },
+    warning: { main: '#ed8f23' },
+    error: { main: '#e53935' },
+    background: { default: '#f2f5fa', paper: '#ffffff' },
+    divider: 'rgba(0,0,0,0.08)',
+    text: { primary: '#1f2733', secondary: '#4c5563' }
   },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontSize: '2.5rem',
-      fontWeight: 700,
-      lineHeight: 1.2,
-      color: '#1a365d'
-    },
-    h2: {
-      fontSize: '2rem',
-      fontWeight: 600,
-      lineHeight: 1.3,
-      color: '#1a365d'
-    },
-    h3: {
-      fontSize: '1.75rem',
-      fontWeight: 600,
-      lineHeight: 1.3,
-      color: '#2d3748'
-    },
-    h4: {
-      fontSize: '1.5rem',
-      fontWeight: 600,
-      lineHeight: 1.4,
-      color: '#2d3748'
-    },
-    h5: {
-      fontSize: '1.25rem',
-      fontWeight: 600,
-      lineHeight: 1.4,
-      color: '#2d3748'
-    },
-    h6: {
-      fontSize: '1.125rem',
-      fontWeight: 600,
-      lineHeight: 1.4,
-      color: '#2d3748'
-    },
-    body1: {
-      fontSize: '1rem',
-      lineHeight: 1.6,
-      color: '#4a5568'
-    },
-    body2: {
-      fontSize: '0.875rem',
-      lineHeight: 1.6,
-      color: '#4a5568'
-    }
-  },
-  shape: {
-    borderRadius: 12
-  },
-  shadows: [
-    'none',
-    '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06)',
-    '0px 4px 6px rgba(0, 0, 0, 0.07), 0px 2px 4px rgba(0, 0, 0, 0.06)',
-    '0px 10px 15px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05)',
-    '0px 20px 25px rgba(0, 0, 0, 0.1), 0px 8px 10px rgba(0, 0, 0, 0.04)',
-    '0px 25px 50px rgba(0, 0, 0, 0.15)',
-    '0px 6px 10px rgba(0, 0, 0, 0.1), 0px 2px 4px rgba(0, 0, 0, 0.06)',
-    '0px 8px 12px rgba(0, 0, 0, 0.1), 0px 3px 6px rgba(0, 0, 0, 0.06)',
-    '0px 10px 16px rgba(0, 0, 0, 0.1), 0px 4px 8px rgba(0, 0, 0, 0.06)',
-    '0px 12px 20px rgba(0, 0, 0, 0.1), 0px 5px 10px rgba(0, 0, 0, 0.06)',
-    '0px 14px 24px rgba(0, 0, 0, 0.1), 0px 6px 12px rgba(0, 0, 0, 0.06)',
-    '0px 16px 28px rgba(0, 0, 0, 0.1), 0px 7px 14px rgba(0, 0, 0, 0.06)',
-    '0px 18px 32px rgba(0, 0, 0, 0.1), 0px 8px 16px rgba(0, 0, 0, 0.06)',
-    '0px 20px 36px rgba(0, 0, 0, 0.1), 0px 9px 18px rgba(0, 0, 0, 0.06)',
-    '0px 22px 40px rgba(0, 0, 0, 0.1), 0px 10px 20px rgba(0, 0, 0, 0.06)',
-    '0px 24px 44px rgba(0, 0, 0, 0.1), 0px 11px 22px rgba(0, 0, 0, 0.06)',
-    '0px 26px 48px rgba(0, 0, 0, 0.1), 0px 12px 24px rgba(0, 0, 0, 0.06)',
-    '0px 28px 52px rgba(0, 0, 0, 0.1), 0px 13px 26px rgba(0, 0, 0, 0.06)',
-    '0px 30px 56px rgba(0, 0, 0, 0.1), 0px 14px 28px rgba(0, 0, 0, 0.06)',
-    '0px 32px 60px rgba(0, 0, 0, 0.1), 0px 15px 30px rgba(0, 0, 0, 0.06)',
-    '0px 34px 64px rgba(0, 0, 0, 0.1), 0px 16px 32px rgba(0, 0, 0, 0.06)',
-    '0px 36px 68px rgba(0, 0, 0, 0.1), 0px 17px 34px rgba(0, 0, 0, 0.06)',
-    '0px 38px 72px rgba(0, 0, 0, 0.1), 0px 18px 36px rgba(0, 0, 0, 0.06)',
-    '0px 40px 76px rgba(0, 0, 0, 0.1), 0px 19px 38px rgba(0, 0, 0, 0.06)',
-    '0px 42px 80px rgba(0, 0, 0, 0.1), 0px 20px 40px rgba(0, 0, 0, 0.06)'
-  ],
+  ...baseDesignTokens,
   components: {
-    MuiContainer: {
+    MuiDataGrid: {
       styleOverrides: {
-        root: {
-          maxWidth: 'none !important',
-          width: '100% !important'
-        }
-      }
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-          boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.07), 0px 2px 4px rgba(0, 0, 0, 0.06)',
-          border: '1px solid #e2e8f0',
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05)',
-            transform: 'translateY(-2px)'
+        root: ({ theme }) => ({
+          border: 'none',
+          '& .MuiDataGrid-columnHeaders': {
+            backgroundColor: theme.palette.action.hover,
+            fontWeight: 600
+          },
+          '& .MuiDataGrid-row:hover': {
+            backgroundColor: theme.palette.action.hover
           }
-        }
+        })
       }
     },
     MuiButton: {
       styleOverrides: {
-        root: {
-          borderRadius: 10,
-          textTransform: 'none',
+        root: () => ({
+          borderRadius: 12,
           fontWeight: 600,
-          padding: '10px 24px',
-          transition: 'all 0.2s ease-in-out'
-        },
-        contained: {
-          boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.07)',
-          '&:hover': {
-            boxShadow: '0px 6px 8px rgba(0, 0, 0, 0.1)',
-            transform: 'translateY(-1px)'
-          }
-        }
-      }
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          fontWeight: 500
-        }
+          textTransform: 'none',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.12)',
+          '&:hover': { boxShadow: '0 4px 10px rgba(0,0,0,0.18)' }
+        })
       }
     },
     MuiPaper: {
       styleOverrides: {
-        root: {
-          borderRadius: 16,
-          border: '1px solid #e2e8f0'
-        }
+        root: () => ({
+          backgroundImage: 'none'
+        })
       }
     }
   }
-});
+};
 
 // Dark Theme
-const darkTheme = createTheme({
+const darkThemeOptions = {
   palette: {
     mode: 'dark',
-    primary: {
-      main: '#4299e1',
-      light: '#63b3ed',
-      dark: '#2b6cb0',
-      contrastText: '#ffffff'
-    },
-    secondary: {
-      main: '#f56565',
-      light: '#fc8181',
-      dark: '#e53e3e',
-      contrastText: '#ffffff'
-    },
-    success: {
-      main: '#48bb78',
-      light: '#68d391',
-      dark: '#38a169'
-    },
-    warning: {
-      main: '#ed8936',
-      light: '#fbb946',
-      dark: '#dd6b20'
-    },
-    info: {
-      main: '#4299e1',
-      light: '#63b3ed',
-      dark: '#3182ce'
-    },
-    background: {
-      default: '#1a202c',
-      paper: '#2d3748'
-    },
-    grey: {
-      50: '#f7fafc',
-      100: '#edf2f7',
-      200: '#e2e8f0',
-      300: '#cbd5e0',
-      400: '#a0aec0',
-      500: '#718096',
-      600: '#4a5568',
-      700: '#2d3748',
-      800: '#1a202c',
-      900: '#171923'
-    },
-    text: {
-      primary: '#f7fafc',
-      secondary: '#a0aec0'
-    },
-    divider: '#4a5568'
+    primary: { main: '#4aa8ff', light: '#76c0ff', dark: '#1873b9', contrastText: '#0d1117' },
+    secondary: { main: '#ff6d6c', light: '#ff8f8e', dark: '#cc3130', contrastText: '#0d1117' },
+    success: { main: '#4caf50' },
+    info: { main: '#42a5f5' },
+    warning: { main: '#ffa726' },
+    error: { main: '#ef5350' },
+    background: { default: '#0f1720', paper: '#19232e' },
+    divider: 'rgba(255,255,255,0.08)',
+    text: { primary: '#e6edf3', secondary: '#9ba5b1' }
   },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontSize: '2.5rem',
-      fontWeight: 700,
-      lineHeight: 1.2,
-      color: '#f7fafc'
-    },
-    h2: {
-      fontSize: '2rem',
-      fontWeight: 600,
-      lineHeight: 1.3,
-      color: '#f7fafc'
-    },
-    h3: {
-      fontSize: '1.75rem',
-      fontWeight: 600,
-      lineHeight: 1.3,
-      color: '#edf2f7'
-    },
-    h4: {
-      fontSize: '1.5rem',
-      fontWeight: 600,
-      lineHeight: 1.4,
-      color: '#edf2f7'
-    },
-    h5: {
-      fontSize: '1.25rem',
-      fontWeight: 600,
-      lineHeight: 1.4,
-      color: '#edf2f7'
-    },
-    h6: {
-      fontSize: '1.125rem',
-      fontWeight: 600,
-      lineHeight: 1.4,
-      color: '#edf2f7'
-    },
-    body1: {
-      fontSize: '1rem',
-      lineHeight: 1.6,
-      color: '#a0aec0'
-    },
-    body2: {
-      fontSize: '0.875rem',
-      lineHeight: 1.6,
-      color: '#a0aec0'
-    }
-  },
-  shape: {
-    borderRadius: 12
-  },
-  shadows: [
-    'none',
-    '0px 1px 3px rgba(0, 0, 0, 0.3), 0px 1px 2px rgba(0, 0, 0, 0.2)',
-    '0px 4px 6px rgba(0, 0, 0, 0.3), 0px 2px 4px rgba(0, 0, 0, 0.2)',
-    '0px 10px 15px rgba(0, 0, 0, 0.3), 0px 4px 6px rgba(0, 0, 0, 0.2)',
-    '0px 20px 25px rgba(0, 0, 0, 0.3), 0px 8px 10px rgba(0, 0, 0, 0.2)',
-    '0px 25px 50px rgba(0, 0, 0, 0.4)',
-    '0px 6px 10px rgba(0, 0, 0, 0.3), 0px 2px 4px rgba(0, 0, 0, 0.2)',
-    '0px 8px 12px rgba(0, 0, 0, 0.3), 0px 3px 6px rgba(0, 0, 0, 0.2)',
-    '0px 10px 16px rgba(0, 0, 0, 0.3), 0px 4px 8px rgba(0, 0, 0, 0.2)',
-    '0px 12px 20px rgba(0, 0, 0, 0.3), 0px 5px 10px rgba(0, 0, 0, 0.2)',
-    '0px 14px 24px rgba(0, 0, 0, 0.3), 0px 6px 12px rgba(0, 0, 0, 0.2)',
-    '0px 16px 28px rgba(0, 0, 0, 0.3), 0px 7px 14px rgba(0, 0, 0, 0.2)',
-    '0px 18px 32px rgba(0, 0, 0, 0.3), 0px 8px 16px rgba(0, 0, 0, 0.2)',
-    '0px 20px 36px rgba(0, 0, 0, 0.3), 0px 9px 18px rgba(0, 0, 0, 0.2)',
-    '0px 22px 40px rgba(0, 0, 0, 0.3), 0px 10px 20px rgba(0, 0, 0, 0.2)',
-    '0px 24px 44px rgba(0, 0, 0, 0.3), 0px 11px 22px rgba(0, 0, 0, 0.2)',
-    '0px 26px 48px rgba(0, 0, 0, 0.3), 0px 12px 24px rgba(0, 0, 0, 0.2)',
-    '0px 28px 52px rgba(0, 0, 0, 0.3), 0px 13px 26px rgba(0, 0, 0, 0.2)',
-    '0px 30px 56px rgba(0, 0, 0, 0.3), 0px 14px 28px rgba(0, 0, 0, 0.2)',
-    '0px 32px 60px rgba(0, 0, 0, 0.3), 0px 15px 30px rgba(0, 0, 0, 0.2)',
-    '0px 34px 64px rgba(0, 0, 0, 0.3), 0px 16px 32px rgba(0, 0, 0, 0.2)',
-    '0px 36px 68px rgba(0, 0, 0, 0.3), 0px 17px 34px rgba(0, 0, 0, 0.2)',
-    '0px 38px 72px rgba(0, 0, 0, 0.3), 0px 18px 36px rgba(0, 0, 0, 0.2)',
-    '0px 40px 76px rgba(0, 0, 0, 0.3), 0px 19px 38px rgba(0, 0, 0, 0.2)',
-    '0px 42px 80px rgba(0, 0, 0, 0.3), 0px 20px 40px rgba(0, 0, 0, 0.2)'
-  ],
+  ...baseDesignTokens,
   components: {
-    MuiContainer: {
+    MuiDataGrid: {
       styleOverrides: {
-        root: {
-          maxWidth: 'none !important',
-          width: '100% !important'
-        }
-      }
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-          boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.3), 0px 2px 4px rgba(0, 0, 0, 0.2)',
-          border: '1px solid #4a5568',
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.3), 0px 4px 6px rgba(0, 0, 0, 0.2)',
-            transform: 'translateY(-2px)'
+        root: ({ theme }) => ({
+          border: 'none',
+          '& .MuiDataGrid-columnHeaders': {
+            backgroundColor: theme.palette.action.hover,
+            fontWeight: 600
+          },
+          '& .MuiDataGrid-row:hover': {
+            backgroundColor: theme.palette.action.hover
           }
-        }
+        })
       }
     },
     MuiButton: {
       styleOverrides: {
-        root: {
-          borderRadius: 10,
-          textTransform: 'none',
+        root: () => ({
+          borderRadius: 12,
           fontWeight: 600,
-          padding: '10px 24px',
-          transition: 'all 0.2s ease-in-out'
-        },
-        contained: {
-          boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.3)',
+          textTransform: 'none',
+          backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0))',
           '&:hover': {
-            boxShadow: '0px 6px 8px rgba(0, 0, 0, 0.4)',
-            transform: 'translateY(-1px)'
+            backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.02))',
+            boxShadow: '0 4px 16px -2px rgba(0,0,0,0.7)'
           }
-        }
-      }
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          fontWeight: 500
-        }
+        })
       }
     },
     MuiPaper: {
       styleOverrides: {
-        root: {
-          borderRadius: 16,
-          border: '1px solid #4a5568'
-        }
+        root: () => ({
+          backgroundImage: 'none'
+        })
       }
     }
   }
-});
+};
 
-// Theme Context
-const ThemeContext = createContext();
+export const ThemeProvider = ({ children }) => {
+  const [mode, setMode] = useState(() => {
+    const savedMode = localStorage.getItem('themeMode');
+    return savedMode === 'dark' ? 'dark' : 'light';
+  });
+
+  const toggleTheme = () => {
+    setMode((prevMode) => {
+      const newMode = prevMode === 'light' ? 'dark' : 'light';
+      localStorage.setItem('themeMode', newMode);
+      return newMode;
+    });
+  };
+
+  const theme = useMemo(() => {
+    const selectedThemeOptions = mode === 'light' ? lightThemeOptions : darkThemeOptions;
+    const t = createTheme({ ...selectedThemeOptions });
+    // Ek renk kısayolları
+    t.colors = {
+      primary: t.palette.primary.main,
+      secondary: t.palette.secondary.main,
+      success: t.palette.success.main,
+      error: t.palette.error.main,
+      warning: t.palette.warning.main,
+      info: t.palette.info.main,
+      background: t.palette.background.paper
+    };
+    return t;
+  }, [mode]);
+
+  const value = useMemo(() => ({ mode, toggleTheme, theme }), [mode, theme]);
+
+  return (
+    <ThemeContext.Provider value={value}>
+      <MuiThemeProvider theme={theme}>{children}</MuiThemeProvider>
+    </ThemeContext.Provider>
+  );
+};
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
@@ -395,37 +180,3 @@ export const useTheme = () => {
   }
   return context;
 };
-
-export const ThemeProvider = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem('procurement-theme');
-    return saved === 'dark';
-  });
-
-  const currentTheme = isDarkMode ? darkTheme : lightTheme;
-
-  const toggleTheme = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    localStorage.setItem('procurement-theme', newMode ? 'dark' : 'light');
-  };
-
-  useEffect(() => {
-    localStorage.setItem('procurement-theme', isDarkMode ? 'dark' : 'light');
-  }, [isDarkMode]);
-
-  const value = {
-    theme: currentTheme,
-    isDarkMode,
-    toggleTheme
-  };
-
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
-};
-
-export { lightTheme, darkTheme };
-export default ThemeContext;

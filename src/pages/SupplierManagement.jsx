@@ -185,9 +185,13 @@ const SupplierManagement = () => {
           Tedarikçilerinizi yönetin, performanslarını takip edin ve yeni tedarikçiler ekleyin
         </Typography>
       </Box>
-
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6,
+            md: 3
+          }}>
           <Card sx={{ background: `linear-gradient(135deg, ${theme.colors.primary} 0%, ${theme.colors.secondary} 100%)`, color: 'white' }}>
             <CardContent sx={{ p: 2 }}>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
@@ -199,7 +203,12 @@ const SupplierManagement = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6,
+            md: 3
+          }}>
           <Card sx={{ background: `linear-gradient(135deg, ${theme.colors.success} 0%, #4caf50 100%)`, color: 'white' }}>
             <CardContent sx={{ p: 2 }}>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
@@ -211,7 +220,12 @@ const SupplierManagement = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6,
+            md: 3
+          }}>
           <Card sx={{ background: `linear-gradient(135deg, ${theme.colors.primary} 0%, #3f51b5 100%)`, color: 'white' }}>
             <CardContent sx={{ p: 2 }}>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
@@ -223,7 +237,12 @@ const SupplierManagement = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6,
+            md: 3
+          }}>
           <Card sx={{ background: `linear-gradient(135deg, ${theme.colors.secondary} 0%, #9c27b0 100%)`, color: 'white' }}>
             <CardContent sx={{ p: 2 }}>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
@@ -236,10 +255,13 @@ const SupplierManagement = () => {
           </Card>
         </Grid>
       </Grid>
-
       <Card sx={{ mb: 3, p: 2 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
+          <Grid
+            size={{
+              xs: 12,
+              md: 4
+            }}>
             <TextField
               fullWidth
               placeholder="Tedarikçi ara..."
@@ -250,7 +272,11 @@ const SupplierManagement = () => {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid
+            size={{
+              xs: 12,
+              md: 2
+            }}>
             <FormControl fullWidth>
               <InputLabel>Kategori</InputLabel>
               <Select
@@ -264,7 +290,11 @@ const SupplierManagement = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid
+            size={{
+              xs: 12,
+              md: 2
+            }}>
             <FormControl fullWidth>
               <InputLabel>Ülke</InputLabel>
               <Select
@@ -278,7 +308,11 @@ const SupplierManagement = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid
+            size={{
+              xs: 12,
+              md: 4
+            }}>
             <Stack direction="row" spacing={1}>
               <Button
                 variant="contained"
@@ -297,7 +331,6 @@ const SupplierManagement = () => {
           </Grid>
         </Grid>
       </Card>
-
       <Card>
         <TableContainer>
           <Table>
@@ -412,7 +445,6 @@ const SupplierManagement = () => {
           </Table>
         </TableContainer>
       </Card>
-
       <Dialog 
         open={dialogOpen} 
         onClose={() => setDialogOpen(false)}
