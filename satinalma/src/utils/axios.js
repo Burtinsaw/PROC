@@ -11,7 +11,7 @@ const axiosServices = axios.create({
 // Request interceptor for API calls
 axiosServices.interceptors.request.use(
   (config) => {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('serviceToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
