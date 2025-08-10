@@ -21,6 +21,10 @@ import RequestDetail from '../pages/RequestDetail';
 import RequestNew from '../pages/RequestNew';
 import RFQs from '../pages/RFQs';
 import RFQDetail from '../pages/RFQDetail';
+import PurchaseOrders from '../pages/PurchaseOrders';
+import PurchaseOrderDetail from '../pages/PurchaseOrderDetail';
+import Shipments from '../pages/Shipments';
+import Finance from '../pages/Finance';
 
 // ==============================|| ROUTING RENDER ||============================== //
 
@@ -80,6 +84,22 @@ const router = createBrowserRouter([
       {
         path: 'rfqs/:id',
         element: <RFQDetail />,
+      },
+      {
+        path: 'purchase-orders',
+        element: <PurchaseOrders />,
+      },
+      {
+        path: 'purchase-orders/:id',
+        element: <PurchaseOrderDetail />,
+      },
+      {
+        path: 'shipments',
+        element: <Shipments />,
+      },
+      {
+        path: 'finance',
+        element: <Finance />,
       },
       {
         path: 'change-password',

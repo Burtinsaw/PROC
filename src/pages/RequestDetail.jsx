@@ -56,6 +56,22 @@ export default function RequestDetail() {
 				<Typography variant="h5">Talep Detayı</Typography>
 					<Stack direction="row" gap={1} alignItems="center">
 					{talep.durum && <Chip label={talep.durum} color="primary" variant="outlined" />}
+						<Tooltip title={talep.durum === 'Onaylandı' ? 'Satınalma siparişi oluştur' : 'Önce talebi onaylayın'}>
+							<span>
+								<Button size="small" variant="contained" color="secondary" disabled={talep.durum !== 'Onaylandı'} onClick={async ()=>{
+									try {
+										// Map talep ürünleri to PO items (basic)
+										const items = (talep.urunler||[]).map(u=>({ description: u.urunAdi, quantity: u.miktar, unitPrice: 0, totalPrice: 0 }));
+										const { data } = await axios.post('/purchase-orders/create-from-request', { talepId: talep.id, items });
+										const poId = data?.purchaseOrder?.id || data?.id;
+										if (poId){ toast.success('PO oluşturuldu'); navigate(`/purchase-orders/${poId}`); }
+										else toast.error('PO yanıtı geçersiz');
+									} catch(e){ console.error('PO create error', e); toast.error(e?.response?.data?.error || 'PO oluşturulamadı'); }
+								}}>
+									PO Oluştur
+								</Button>
+							</span>
+						</Tooltip>
 						<Button
 							size="small"
 							variant="outlined"
