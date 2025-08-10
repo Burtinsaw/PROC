@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Stack, CircularProgress, Typography, Chip, Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Box, Stack, CircularProgress, Typography, Chip, Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
 import MainCard from '../components/common/MainCard';
@@ -13,6 +16,9 @@ export default function PurchaseOrderDetail(){
   const [invOpen, setInvOpen] = useState(false);
   const [shipmentForm, setShipmentForm] = useState({ carrier:'', trackingNumber:'' });
   const [invoiceForm, setInvoiceForm] = useState({ subtotal:'', taxRate:'18', dueDate:'' });
+  const [itemDialogOpen, setItemDialogOpen] = useState(false);
+  const [itemForm, setItemForm] = useState({ description:'', quantity:'1', unitPrice:'0' });
+  const [itemEditing, setItemEditing] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -45,6 +51,39 @@ export default function PurchaseOrderDetail(){
     } catch(e){ console.error('Invoice create', e); toast.error(e?.response?.data?.error || 'Fatura oluşturulamadı'); }
   };
 
+  const saveItem = async () => {
+    try {
+      const payload = { description: itemForm.description, quantity: parseFloat(itemForm.quantity||'0'), unitPrice: parseFloat(itemForm.unitPrice||'0') };
+      if (itemEditing) {
+        await axios.put(`/purchase-orders/${po.id}/items/${itemEditing.id}`, payload);
+        toast.success('Kalem güncellendi');
+      } else {
+        await axios.post(`/purchase-orders/${po.id}/items`, payload);
+        toast.success('Kalem eklendi');
+      }
+      setItemDialogOpen(false); setItemEditing(null); setItemForm({ description:'', quantity:'1', unitPrice:'0' });
+      load();
+    } catch(e){ console.error('Item save', e); toast.error(e?.response?.data?.error || 'Kalem kaydedilemedi'); }
+  };
+
+  const deleteItem = async (row) => {
+    if (!window.confirm('Kalemi silmek istediğinize emin misiniz?')) return;
+    try { await axios.delete(`/purchase-orders/${po.id}/items/${row.id}`); toast.success('Kalem silindi'); load(); } catch{ toast.error('Kalem silinemedi'); }
+  };
+
+  const itemColumns = [
+    { field:'description', headerName:'Açıklama', flex:1, minWidth:180 },
+    { field:'quantity', headerName:'Miktar', flex:0.4, minWidth:100 },
+    { field:'unitPrice', headerName:'Birim Fiyat', flex:0.5, minWidth:120 },
+    { field:'totalPrice', headerName:'Tutar', flex:0.5, minWidth:120 },
+    { field:'actions', headerName:'', width:110, sortable:false, filterable:false, renderCell:(params)=>(
+      <Stack direction="row" spacing={1}>
+        <Button size="small" onClick={()=>{ setItemEditing(params.row); setItemForm({ description: params.row.description, quantity:String(params.row.quantity), unitPrice:String(params.row.unitPrice) }); setItemDialogOpen(true); }}>Düzenle</Button>
+        <IconButton size="small" color="error" onClick={()=>deleteItem(params.row)}><DeleteIcon fontSize="inherit" /></IconButton>
+      </Stack>
+    ) }
+  ];
+
   if (loading) return <Stack alignItems="center" justifyContent="center" sx={{ height:400 }}><CircularProgress/></Stack>;
   if (!po) return <Typography>PO bulunamadı</Typography>;
 
@@ -69,11 +108,11 @@ export default function PurchaseOrderDetail(){
             </Stack>
           </MainCard>
         </Grid>
-        <Grid item xs={12} md={4}>
-          <MainCard title="Kalemler">
-            <Stack gap={1}>
-              {po.items?.length? po.items.map(it=> <Stack key={it.id} direction="row" justifyContent="space-between"><Typography>{it.description}</Typography><Typography color="text.secondary">{it.quantity} x {it.unitPrice||0}</Typography></Stack>): <Typography color="text.secondary">Kayıt yok</Typography>}
-            </Stack>
+        <Grid item xs={12} md={8}>
+          <MainCard title="Kalemler" secondary={<Button startIcon={<AddIcon/>} size="small" onClick={()=>{ setItemEditing(null); setItemForm({ description:'', quantity:'1', unitPrice:'0'}); setItemDialogOpen(true); }}>Ekle</Button>} content={false}>
+            <Box sx={{ height: 310 }}>
+              <DataGrid rows={po.items || []} columns={itemColumns} getRowId={(r)=>r.id} pageSizeOptions={[5]} initialState={{ pagination:{ paginationModel:{ pageSize:5 }}}} />
+            </Box>
           </MainCard>
         </Grid>
         <Grid item xs={12} md={4}>
@@ -116,6 +155,22 @@ export default function PurchaseOrderDetail(){
         <DialogActions>
           <Button onClick={()=>setInvOpen(false)}>İptal</Button>
           <Button onClick={createInvoice} variant="contained" disabled={!invoiceForm.subtotal}>Kaydet</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Item Dialog */}
+      <Dialog open={itemDialogOpen} onClose={()=>setItemDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{itemEditing? 'Kalem Düzenle' : 'Kalem Ekle'}</DialogTitle>
+        <DialogContent sx={{ display:'flex', flexDirection:'column', gap:2, mt:1 }}>
+          <TextField label="Açıklama" value={itemForm.description} onChange={e=>setItemForm(f=>({...f, description:e.target.value}))} size="small" />
+          <Stack direction="row" gap={2}>
+            <TextField label="Miktar" value={itemForm.quantity} onChange={e=>setItemForm(f=>({...f, quantity:e.target.value}))} size="small" fullWidth />
+            <TextField label="Birim Fiyat" value={itemForm.unitPrice} onChange={e=>setItemForm(f=>({...f, unitPrice:e.target.value}))} size="small" fullWidth />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={()=>setItemDialogOpen(false)}>İptal</Button>
+          <Button onClick={saveItem} variant="contained" disabled={!itemForm.description}>Kaydet</Button>
         </DialogActions>
       </Dialog>
     </Box>
