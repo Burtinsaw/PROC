@@ -1,0 +1,40 @@
+### Health (proxy via frontend)
+GET http://localhost:3000/api/health
+
+### Health (backend direct)
+GET http://localhost:5002/api/health
+
+### Auth login (backend)
+POST http://localhost:5002/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "Admin@12345"
+}
+
+### Companies list (proxy)
+GET http://localhost:3000/api/companies
+
+### Companies create (backend)
+POST http://localhost:5002/api/companies
+Content-Type: application/json
+
+{
+  "name": "Smoke Co {{timestamp}}",
+  "code": "SMK-{{timestamp}}",
+  "type": "supplier",
+  "email": "smoke{{timestamp}}@example.com",
+  "phone": "+90-555-000-00-00"
+}
+
+### Companies import (backend)
+POST http://localhost:5002/api/companies/import
+Content-Type: application/json
+
+{
+  "companies": [
+    { "name": "Import Smoke {{timestamp}}", "code": "IMPSMK-{{timestamp}}", "type": "Supplier", "email": "imp{{timestamp}}@example.com" },
+    { "name": "Only-By-Name {{timestamp}}", "type": "Customer" }
+  ]
+}

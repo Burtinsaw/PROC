@@ -1,0 +1,53 @@
+export const SUPPORTED_LANGS = ['tr','en','ru'];
+export const DICT = {
+  'header.requests': { tr: 'Talepler', en: 'Requests', ru: 'Заявки' },
+  'header.logout': { tr: 'Çıkış Yap', en: 'Logout', ru: 'Выход' },
+  'header.settings': { tr: 'Ayarlar', en: 'Settings', ru: 'Настройки' },
+  'header.profile': { tr: 'Profilim', en: 'My Profile', ru: 'Профиль' },
+  'header.notifications': { tr: 'Bildirimler', en: 'Notifications', ru: 'Уведомления' },
+  'header.viewAllNotifications': { tr: 'Tüm Bildirimleri Gör', en: 'View All Notifications', ru: 'Показать все' },
+  'header.fullscreen': { tr: 'Tam Ekran', en: 'Fullscreen', ru: 'Полноэкранный' },
+  'header.themeToggle': { tr: 'Tema Değiştir', en: 'Toggle Theme', ru: 'Переключить тему' },
+  'header.messages': { tr: 'Mesajlar', en: 'Messages', ru: 'Сообщения' },
+  'header.language': { tr: 'Dil', en: 'Language', ru: 'Язык' },
+  'header.searchPlaceholder': { tr: 'Talep, tedarikçi veya ürün ara...', en: 'Search requests, suppliers or products...', ru: 'Поиск заявок, поставщиков или продуктов...' },
+  'header.sampleNotif.pendingTitle': { tr: 'Yeni talep onayı bekleniyor', en: 'New request awaiting approval', ru: 'Новая заявка ждёт одобрения' },
+  'header.sampleNotif.pendingMsg': { tr: 'Talep onayınızı bekliyor', en: 'A request is awaiting your approval', ru: 'Заявка ожидает вашего одобрения' },
+  'header.sampleNotif.offerTitle': { tr: 'Teklif alındı', en: 'Offer received', ru: 'Получено предложение' },
+  'header.sampleNotif.offerMsg': { tr: 'Ürün için yeni teklifler geldi', en: 'New offers received for product', ru: 'Получены новые предложения по продукту' },
+  'header.sampleNotif.deliveryTitle': { tr: 'Teslimat tamamlandı', en: 'Delivery completed', ru: 'Доставка завершена' },
+  'header.sampleNotif.deliveryMsg': { tr: 'Siparişiniz teslim edildi', en: 'Your order has been delivered', ru: 'Ваш заказ доставлен' }
+};
+
+// Request New Page
+Object.assign(DICT, {
+    'request.new.title': { tr: 'Yeni Talep', en: 'New Request', ru: 'Новая заявка' },
+    'request.new.desc': { tr: 'Satın alma talebinizi oluşturun. Zorunlu alanları doldurduktan sonra Kaydet ile ilerleyin.', en: 'Create your procurement request. Fill required fields then click Save.', ru: 'Создайте заявку. Заполните обязательные поля и сохраните.' },
+    'request.field.header.general': { tr: 'Genel Bilgiler', en: 'General Information', ru: 'Общая информация' },
+    'request.field.header.products': { tr: 'Ürünler', en: 'Products', ru: 'Товары' },
+    'request.field.title': { tr: 'Başlık', en: 'Title', ru: 'Заголовок' },
+    'request.field.description': { tr: 'Açıklama', en: 'Description', ru: 'Описание' },
+    'request.field.company': { tr: 'Firma', en: 'Company', ru: 'Компания' },
+    'request.field.requesterName': { tr: 'Talep Sahibi Adı', en: 'Requester Name', ru: 'Имя заявителя' },
+    'request.field.department': { tr: 'Departman', en: 'Department', ru: 'Отдел' },
+    'request.field.productName': { tr: 'Ürün Adı', en: 'Product Name', ru: 'Название товара' },
+    'request.field.quantity': { tr: 'Miktar', en: 'Quantity', ru: 'Количество' },
+    'request.field.unit': { tr: 'Birim', en: 'Unit', ru: 'Ед.' },
+    'request.field.brand': { tr: 'Marka', en: 'Brand', ru: 'Бренд' },
+    'request.field.model': { tr: 'Model', en: 'Model', ru: 'Модель' },
+    'request.action.cancel': { tr: 'İptal', en: 'Cancel', ru: 'Отмена' },
+    'request.action.clearDraft': { tr: 'Taslağı Temizle', en: 'Clear Draft', ru: 'Очистить черновик' },
+    'request.action.bulkImport': { tr: 'Toplu İçe Aktar', en: 'Bulk Import', ru: 'Массовый импорт' },
+    'request.action.save': { tr: 'Kaydet', en: 'Save', ru: 'Сохранить' },
+    'request.action.addProduct': { tr: 'Ürün Ekle', en: 'Add Product', ru: 'Добавить товар' },
+    'request.action.addAnotherProduct': { tr: 'Bir Ürün Daha Ekle', en: 'Add Another Product', ru: 'Добавить ещё' },
+    'request.badge.productCount': { tr: 'Ürün Sayısı', en: 'Product Count', ru: 'Кол-во товаров' },
+    'request.badge.ready': { tr: 'Hazır', en: 'Ready', ru: 'Готово' },
+    'request.badge.missing': { tr: 'Eksik Alanlar', en: 'Missing Fields', ru: 'Не заполнено' },
+    'request.badge.ok': { tr: 'Tamam', en: 'OK', ru: 'ОК' },
+    'request.badge.missingItem': { tr: 'Eksik alanlar', en: 'Missing fields', ru: 'Пробелы' },
+    'request.helper.required': { tr: 'Gerekli', en: 'Required', ru: 'Обязательно' },
+    'request.helper.quantityInvalid': { tr: '>', en: '>', ru: '>' },
+    'request.helper.dragSoon': { tr: 'Sürükle (yakında)', en: 'Drag (soon)', ru: 'Перетаскивание (скоро)' },
+    'request.mobile.formStatus': { tr: 'Form Durumu', en: 'Form Status', ru: 'Статус формы' }
+});
