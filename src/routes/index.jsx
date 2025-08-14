@@ -33,6 +33,7 @@ const PurchaseOrderDetail = lazy(() => import('../pages/PurchaseOrderDetail'));
 const Shipments = lazy(() => import('../pages/Shipments'));
 const Finance = lazy(() => import('../pages/Finance'));
 const Reports = lazy(() => import('../pages/Reports'));
+const EmailInbox = lazy(() => import('../pages/EmailInbox'));
 import Loader from '../components/Loader';
 import AdminHome from '../pages/admin/AdminHome';
 import Companies from '../pages/admin/Companies';
@@ -148,6 +149,7 @@ const router = createBrowserRouter([
   element: <Suspense fallback={<Loader />}><Finance /></Suspense>,
       },
   { path: 'raporlar', element: <Suspense fallback={<Loader />}><Reports /></Suspense> },
+  { path: 'email', element: <Suspense fallback={<Loader />}><EmailInbox /></Suspense> },
   { path: 'messages', element: <Suspense fallback={<Loader />}><Messages /></Suspense> },
   { path: 'proforma/:number', element: <Suspense fallback={<Loader />}><ProformaDetail /></Suspense> },
       {

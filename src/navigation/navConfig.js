@@ -68,6 +68,7 @@ const navConfig = [
       }
     ]
   },
+  { id: 'email-inbox', label: 'E-posta', icon: Users, path: '/email' },
   { id: 'raporlar', label: 'Raporlar', icon: BarChart3, path: '/raporlar' },
   {
     id: 'admin',
