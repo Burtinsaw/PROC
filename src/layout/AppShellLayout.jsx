@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, useMediaQuery } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import AccordionSidebar, { ACC_SIDEBAR_WIDTH } from '../components/nav/AccordionSidebar';
 import NavRail, { RAIL_WIDTH, RAIL_COLLAPSED_WIDTH } from '../components/nav/NavRail';
 import NavContextPanel from '../components/nav/NavContextPanel';
@@ -21,6 +21,26 @@ export default function AppShellLayout() {
   const railFocusApiRef = useRef({});
 
   const isMobile = useMediaQuery('(max-width:900px)');
+  const location = useLocation();
+  const prevCollapsedRef = useRef(null);
+
+  // E-posta rotalarında otomatik olarak menüyü rail (ikon) moduna indir
+  useEffect(() => {
+    const onEmail = location.pathname.startsWith('/email');
+    if (onEmail) {
+      // İlk girişte mevcut durumu hatırla ve ikon moduna geç
+      if (prevCollapsedRef.current === null) prevCollapsedRef.current = menuCollapsed;
+      if (!menuCollapsed) setMenuCollapsed(true);
+    } else {
+      // E-postadan çıkarken önceki durumu geri yükle
+      if (prevCollapsedRef.current !== null) {
+        const prev = prevCollapsedRef.current;
+        prevCollapsedRef.current = null;
+        if (menuCollapsed !== prev) setMenuCollapsed(prev);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   // Global ESC when focus not inside panel closes it
   useEffect(()=> {

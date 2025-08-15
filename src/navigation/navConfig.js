@@ -33,7 +33,7 @@ const navConfig = [
         label: 'RFQ',
         links: [
           { id: 'rfq-olustur', label: 'RFQ Oluştur', path: '/satinalma/rfq/olustur', permsAny: ['requests:create'] },
-          { id: 'rfq-takip', label: 'RFQ Takip', path: '/satinalma/rfq/takip', permsAny: ['requests:read'] }
+          { id: 'rfq-takip', label: 'RFQ Takip', path: '/satinalma/rfq', permsAny: ['requests:read'] }
         ]
       }
     ]
@@ -47,8 +47,8 @@ const navConfig = [
         id: 'lojistik-op',
         label: 'Operasyon',
         links: [
-          { id: 'lojistik-takip', label: 'Takip', path: '/lojistik/takip', permsAny: ['requests:read'] },
-          { id: 'lojistik-sevkiyat', label: 'Sevkiyat', path: '/lojistik/sevkiyat', permsAny: ['requests:read'] }
+          { id: 'lojistik-panel', label: 'Panel', path: '/lojistik', permsAny: ['requests:read'] },
+          { id: 'lojistik-sevkiyat', label: 'Sevkiyat', path: '/shipments', permsAny: ['requests:read'] }
         ]
       }
     ]
@@ -62,13 +62,12 @@ const navConfig = [
         id: 'finans-islem',
         label: 'İşlemler',
         links: [
-          { id: 'finans-odemeler', label: 'Ödemeler', path: '/finans/odemeler', permsAny: ['requests:read'] },
-          { id: 'finans-raporlar', label: 'Raporlar', path: '/finans/raporlar', permsAny: ['requests:read'] }
+          { id: 'finans-anasayfa', label: 'Finans', path: '/finance', permsAny: ['requests:read'] }
         ]
       }
     ]
   },
-  { id: 'email-inbox', label: 'E-posta', icon: Users, path: '/email' },
+  { id: 'email', label: 'E-posta', icon: Users, path: '/email' },
   { id: 'raporlar', label: 'Raporlar', icon: BarChart3, path: '/raporlar' },
   {
     id: 'admin',
@@ -86,7 +85,21 @@ const navConfig = [
       }
     ]
   },
-  { id: 'settings', label: 'Ayarlar', icon: Settings, path: '/settings' },
+  {
+    id: 'settings',
+    label: 'Ayarlar',
+    icon: Settings,
+    groups: [
+      {
+        id: 'settings-core',
+        label: 'Ayarlar',
+        links: [
+          { id: 'settings-general', label: 'Genel', path: '/settings' },
+          { id: 'settings-email', label: 'E-Posta Ayarları', path: '/settings/email' }
+        ]
+      }
+    ]
+  },
   { id: 'help', label: 'Yardım', icon: HelpCircle, path: '/help' }
 ];
 

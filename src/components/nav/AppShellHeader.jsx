@@ -9,6 +9,8 @@ import { useAppTheme } from '../../contexts/useAppTheme';
 import { useAuth } from '../../contexts/useAuth';
 import { getUnreadCount } from '../../api/messages';
 import { useChat } from '../../contexts/ChatContext';
+import { getCounts as getEmailCounts } from '../../api/email';
+import EmailHeaderToolbar from '../email/EmailHeaderToolbar';
 
 function findMatch(pathname) {
   for(const item of navConfig) {
@@ -84,6 +86,7 @@ export default function AppShellHeader() {
   const [notifAnchor, setNotifAnchor] = useState(null);
   const [langAnchor, setLangAnchor] = useState(null);
   const [unread, setUnread] = useState(0);
+  const isEmail = location.pathname.startsWith('/email');
   // Poll + socket tetikleyici
   useEffect(() => {
     let mounted = true;
@@ -127,6 +130,28 @@ export default function AppShellHeader() {
     }
   };
 
+  // E-posta sayacı (global) – socket ile anlık; polling yedekli
+  useEffect(()=>{
+    let timer;
+  const pull = async ()=>{
+      try {
+    const counts = await getEmailCounts();
+    window.__emailCounts = counts;
+  try { window.dispatchEvent(new CustomEvent('email-counts-changed', { detail: counts })); } catch { /* ignore */ }
+      } catch { /* ignore */ }
+    };
+    pull();
+    timer = setInterval(pull, 30000);
+  const onCounts = (payload)=>{
+      if (payload?.counts) {
+    window.__emailCounts = payload.counts;
+  try { window.dispatchEvent(new CustomEvent('email-counts-changed', { detail: payload.counts })); } catch { /* ignore */ }
+      }
+    };
+    chat?.socket?.on?.('email:counts_changed', onCounts);
+    return ()=> { if(timer) clearInterval(timer); chat?.socket?.off?.('email:counts_changed', onCounts); };
+  }, [chat?.socket]);
+
   return (
     <Box
       component="header"
@@ -134,7 +159,7 @@ export default function AppShellHeader() {
         {
           position:'sticky', top:0, zIndex: 1010,
           display:'flex', alignItems:'center', justifyContent:'space-between',
-          height:56,
+          height:'auto',
           px:{ xs:2, sm:2.5, md:3 }, mb:2,
           borderBottom:'1px solid', borderColor: theme.palette.divider,
           background: theme.preset==='aurora'
@@ -146,7 +171,7 @@ export default function AppShellHeader() {
         }
       )}
     >
-      <Box sx={{ display:'flex', flexDirection:'column', gap:.25, overflow:'hidden' }}>
+      <Box sx={{ display:'flex', flexDirection:'column', gap:.25, flex:1, overflow:'hidden' }}>
         {!!title && (
           <Typography variant="h6" sx={{ fontWeight:600, letterSpacing:.2, whiteSpace:'nowrap', textOverflow:'ellipsis', overflow:'hidden' }}>{title}</Typography>
         )}
@@ -154,7 +179,6 @@ export default function AppShellHeader() {
           {breadcrumbs.map((c,i)=> {
             const Icon = c.icon;
             const last = i === breadcrumbs.length -1;
-            // Sadece panel ikonuna tıklanabilirlik ver; yazılar normal breadcrumb ama link değil
             if (i === 0 && Icon) {
               return (
                 <MuiLink
@@ -176,8 +200,13 @@ export default function AppShellHeader() {
             );
           })}
         </Breadcrumbs>
+        {isEmail && (
+          <Box>
+            <EmailHeaderToolbar />
+          </Box>
+        )}
       </Box>
-      <Box sx={{ display:'flex', alignItems:'center', gap:1 }}>
+      <Box sx={{ display:'flex', alignItems:'center', gap:1, pl:1 }}>
         {/* Fullscreen toggle */}
         <Tooltip title={isFullscreen ? 'Pencereden çık' : 'Tam ekran'}>
           <IconButton onClick={toggleFullscreen} size="small" color="default">

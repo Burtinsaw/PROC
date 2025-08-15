@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Switch, FormControlLabel, Paper, Stack, Divider, ToggleButtonGroup, ToggleButton, Select, MenuItem, Button, Slider } from '@mui/material';
+import { Box, Typography, Switch, FormControlLabel, Paper, Stack, Divider, ToggleButtonGroup, ToggleButton, Select, MenuItem, Button, Slider, Chip, TextField } from '@mui/material';
 import ContentContainer from '../components/layout/ContentContainer';
 import { useAppTheme } from '../contexts/useAppTheme';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -16,6 +16,12 @@ export default function Settings() {
   const [bgDim, setBgDim] = useState(0);
   const [defaultLanding, setDefaultLanding] = useState('/');
   const [applyBgGlobally, setApplyBgGlobally] = useState(false);
+  // Posta ayarları
+  const COMPANY_COLORS = { BN: '#1f77b4', YN: '#ff7f0e', AL: '#2ca02c', TG: '#d62728', OT: '#9467bd', NZ: '#8c564b' };
+  const [mailDefaultCompanies, setMailDefaultCompanies] = useState([]);
+  const [mailPreviewPane, setMailPreviewPane] = useState(true);
+  const [mailListDensity, setMailListDensity] = useState('comfortable'); // 'comfortable' | 'compact'
+  const [mailAutoRefreshSec, setMailAutoRefreshSec] = useState(0);
 
   useEffect(() => {
     try {
@@ -89,6 +95,43 @@ export default function Settings() {
   const onDefaultLanding = (e) => { const v = e.target.value; setDefaultLanding(v); try { localStorage.setItem('defaultLanding', v); } catch {/* ignore */} };
   const onApplyBgGlobally = (e) => { const v = e.target.checked; setApplyBgGlobally(v); try { localStorage.setItem('applyBgGlobally', String(v)); } catch {/* ignore */} try { window.dispatchEvent(new Event('appConfigUpdated')); } catch { /* ignore */ } };
 
+  // Posta ayarlarını yerelden yükle
+  useEffect(() => {
+    try {
+      const defCompanies = JSON.parse(localStorage.getItem('email.defaultCompanies') || '[]');
+      if (Array.isArray(defCompanies)) setMailDefaultCompanies(defCompanies);
+      const pv = localStorage.getItem('email.previewPane');
+      setMailPreviewPane(pv !== 'false');
+      const dens = localStorage.getItem('email.listDensity');
+      setMailListDensity(dens === 'compact' ? 'compact' : 'comfortable');
+      const ar = parseInt(localStorage.getItem('email.autoRefreshSec') || '0', 10);
+      setMailAutoRefreshSec(Number.isFinite(ar) ? ar : 0);
+    } catch { /* ignore */ }
+  }, []);
+
+  const onToggleCompany = (code) => {
+    setMailDefaultCompanies(prev => {
+      const next = prev.includes(code) ? prev.filter(x=>x!==code) : [...prev, code];
+      try { localStorage.setItem('email.defaultCompanies', JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
+  const onMailPreview = (e) => {
+    const v = e.target.checked;
+    setMailPreviewPane(v);
+    try { localStorage.setItem('email.previewPane', String(v)); } catch { /* ignore */ }
+  };
+  const onMailDensity = (_, v) => {
+    if (!v) return;
+    setMailListDensity(v);
+    try { localStorage.setItem('email.listDensity', v); } catch { /* ignore */ }
+  };
+  const onMailAutoRefresh = (e) => {
+    const v = Math.max(0, parseInt(e.target.value || '0', 10) || 0);
+    setMailAutoRefreshSec(v);
+    try { localStorage.setItem('email.autoRefreshSec', String(v)); } catch { /* ignore */ }
+  };
+
   return (
     <ContentContainer>
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Ayarlar</Typography>
@@ -122,6 +165,39 @@ export default function Settings() {
                 <MenuItem value="en">English</MenuItem>
               </Select>
             </Box>
+          </Stack>
+        </Paper>
+
+        <Paper variant="outlined" sx={{ p: 2 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Posta</Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Stack spacing={1.5}>
+            <Box>
+              <Typography variant="body2" sx={{ mb: .5 }}>Varsayılan şirket filtreleri</Typography>
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                {Object.keys(COMPANY_COLORS).map(code => (
+                  <Chip key={code} size="small" label={code}
+                    color={mailDefaultCompanies.includes(code) ? 'primary' : 'default'}
+                    variant={mailDefaultCompanies.includes(code) ? 'filled' : 'outlined'}
+                    onClick={()=> onToggleCompany(code)}
+                  />
+                ))}
+              </Stack>
+              <Typography variant="caption" color="text.secondary">Gelen kutusu açıldığında bu filtreler otomatik uygulanır.</Typography>
+            </Box>
+            <FormControlLabel control={<Switch checked={mailPreviewPane} onChange={onMailPreview} />} label="Önizleme paneli açık" />
+            <Box sx={{ display:'flex', alignItems:'center', gap: 1 }}>
+              <Typography variant="body2" sx={{ minWidth: 140 }}>Liste yoğunluğu</Typography>
+              <ToggleButtonGroup size="small" exclusive value={mailListDensity} onChange={onMailDensity}>
+                <ToggleButton value="comfortable">Rahat</ToggleButton>
+                <ToggleButton value="compact">Kompakt</ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+            <Box sx={{ display:'flex', alignItems:'center', gap: 1 }}>
+              <Typography variant="body2" sx={{ minWidth: 140 }}>Otomatik yenileme (sn)</Typography>
+              <TextField size="small" type="number" value={mailAutoRefreshSec} onChange={onMailAutoRefresh} sx={{ width: 120 }} />
+            </Box>
+            <Typography variant="caption" color="text.secondary">0 = kapalı. 30-60 sn önerilir. IMAP senkron arka planda devam eder.</Typography>
           </Stack>
         </Paper>
 

@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Box, List, ListItemButton, ListItemIcon, ListItemText, Collapse, Tooltip, IconButton, Typography, Stack, Divider } from '@mui/material';
+import { Box, List, ListItemButton, ListItemIcon, ListItemText, Collapse, Tooltip, IconButton, Typography, Stack, Divider, Badge } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { ChevronLeft } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
@@ -14,6 +14,7 @@ export default function AccordionSidebar({ leftOffset = 0, topOffset = 56, onCol
   const location = useLocation();
   const navigate = useNavigate();
   const [openGroups, setOpenGroups] = useState({});
+  const [emailCountsVersion, setEmailCountsVersion] = useState(0);
 
   useEffect(()=>{
     // open the group that contains the current route by default
@@ -29,6 +30,13 @@ export default function AccordionSidebar({ leftOffset = 0, topOffset = 56, onCol
   }, []);
 
   const items = useMemo(()=> navConfig, []);
+
+  // Listen for global email counts changes to refresh badge
+  useEffect(() => {
+    const onChange = () => setEmailCountsVersion(v => v + 1);
+    window.addEventListener('email-counts-changed', onChange);
+    return () => window.removeEventListener('email-counts-changed', onChange);
+  }, []);
 
   const toggle = (id) => setOpenGroups(prev => {
     const nextOpen = !prev[id];
@@ -122,7 +130,13 @@ export default function AccordionSidebar({ leftOffset = 0, topOffset = 56, onCol
                 '&:hover': { backgroundColor: active ? alpha(theme.palette.primary.main, 0.18) : theme.palette.action.hover }
                               })}
                             >
-                              <ListItemText primaryTypographyProps={{ fontSize: 14, fontWeight: active? 600: 500 }} primary={link.label} />
+                              {link.path?.startsWith('/email/spam') ? (
+                                <Badge key={emailCountsVersion} color="error" badgeContent={window.__emailCounts?.spamUnread || 0} invisible={!(window.__emailCounts?.spamUnread > 0)} sx={{ '& .MuiBadge-badge': { right: -4 } }}>
+                                  <ListItemText primaryTypographyProps={{ fontSize: 14, fontWeight: active? 600: 500 }} primary={link.label} />
+                                </Badge>
+                              ) : (
+                                <ListItemText primaryTypographyProps={{ fontSize: 14, fontWeight: active? 600: 500 }} primary={link.label} />
+                              )}
                             </ListItemButton>
                           );
                         })}

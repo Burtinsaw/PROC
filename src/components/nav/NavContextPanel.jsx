@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef, memo } from 'react';
-import { Box, Typography, Divider, List, ListItemButton, TextField } from '@mui/material';
+import { Box, Typography, Divider, List, ListItemButton, TextField, Badge } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import usePermissions from '../../hooks/usePermissions';
 
@@ -10,6 +10,7 @@ function NavContextPanel({ item, onClose, railWidth, onPointerEnter, onPointerLe
   const { any } = usePermissions();
   const location = useLocation();
   const [q, setQ] = useState('');
+  const [emailCountsVersion, setEmailCountsVersion] = useState(0);
   const searchRef = useRef();
   const panelRef = useRef();
   const groups = useMemo(()=> {
@@ -30,6 +31,13 @@ function NavContextPanel({ item, onClose, railWidth, onPointerEnter, onPointerLe
       searchRef.current.focus();
     }
   }, [item, groups.length]);
+
+  // Listen for email counts to refresh spam badge
+  useEffect(() => {
+    const onChange = () => setEmailCountsVersion(v => v + 1);
+    window.addEventListener('email-counts-changed', onChange);
+    return () => window.removeEventListener('email-counts-changed', onChange);
+  }, []);
 
   useEffect(()=> {
     const node = panelRef.current;
@@ -115,6 +123,7 @@ function NavContextPanel({ item, onClose, railWidth, onPointerEnter, onPointerLe
                     renderedLabel = <span>{label.slice(0,idx)}<strong>{label.slice(idx, idx+q.length)}</strong>{label.slice(idx+q.length)}</span>;
                   }
                 }
+                const isSpam = l.path && l.path.startsWith('/email/spam');
                 return (
                   <ListItemButton
                     key={l.id}
@@ -139,7 +148,13 @@ function NavContextPanel({ item, onClose, railWidth, onPointerEnter, onPointerLe
                       '&:hover': { background: active ? undefined : (theme.palette.mode==='dark'? 'rgba(255,255,255,0.06)':'rgba(0,0,0,0.05)') }
                     })}
                   >
-                    <Typography variant="body2" sx={{ fontWeight: active?600:500 }}>{renderedLabel}</Typography>
+                    {isSpam ? (
+                      <Badge key={emailCountsVersion} color="error" variant="dot" invisible={!window.__emailCounts || !window.__emailCounts.spamUnread} sx={{ '& .MuiBadge-badge': { right: -10 }}}>
+                        <Typography variant="body2" sx={{ fontWeight: active?600:500 }}>{renderedLabel}</Typography>
+                      </Badge>
+                    ) : (
+                      <Typography variant="body2" sx={{ fontWeight: active?600:500 }}>{renderedLabel}</Typography>
+                    )}
                   </ListItemButton>
                 );
               })}

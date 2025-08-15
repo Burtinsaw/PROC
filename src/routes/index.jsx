@@ -1,9 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom';
-import React, { lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 
 // project imports
 import Settings from '../pages/Settings';
-const ThemePreview = React.lazy(() => import('../pages/ThemePreview'));
+const ThemePreview = lazy(() => import('../pages/ThemePreview'));
 import AppShellLayout from '../layout/AppShellLayout';
 import ProcurementDashboard from '../pages/ProcurementDashboard';
 const SupplierManagement = lazy(() => import('../pages/SupplierManagement'));
@@ -34,11 +34,16 @@ const Shipments = lazy(() => import('../pages/Shipments'));
 const Finance = lazy(() => import('../pages/Finance'));
 const Reports = lazy(() => import('../pages/Reports'));
 const EmailInbox = lazy(() => import('../pages/EmailInbox'));
+const EmailSettings = lazy(() => import('../pages/EmailSettings'));
 import Loader from '../components/Loader';
 import AdminHome from '../pages/admin/AdminHome';
 import Companies from '../pages/admin/Companies';
 const Messages = lazy(() => import('../pages/Messages'));
 import { ChatProvider } from '../contexts/ChatContext';
+const EmailCompose = lazy(() => import('../pages/EmailCompose'));
+const EmailDrafts = lazy(() => import('../pages/EmailDrafts'));
+const EmailScheduled = lazy(() => import('../pages/EmailScheduled'));
+const LogisticsDashboard = lazy(() => import('../pages/LogisticsDashboard'));
 
 // ==============================|| ROUTING RENDER ||============================== //
 
@@ -108,6 +113,7 @@ const router = createBrowserRouter([
       },
   { path: 'settings', element: <Settings /> },
   { path: 'settings/theme-preview', element: <Suspense fallback={<Loader />}><ThemePreview /></Suspense> },
+  { path: 'settings/email', element: <Suspense fallback={<Loader />}><EmailSettings /></Suspense> },
   // Legacy redirects from eski /requests yapısı
   { path: 'requests', loader: () => { window.location.replace('/talep'); return null; } },
   { path: 'requests/new', loader: () => { window.location.replace('/talep/yeni'); return null; } },
@@ -144,12 +150,17 @@ const router = createBrowserRouter([
         path: 'shipments',
   element: <Suspense fallback={<Loader />}><Shipments /></Suspense>,
       },
+  { path: 'lojistik', element: <Suspense fallback={<Loader />}><LogisticsDashboard /></Suspense> },
       {
         path: 'finance',
   element: <Suspense fallback={<Loader />}><Finance /></Suspense>,
       },
   { path: 'raporlar', element: <Suspense fallback={<Loader />}><Reports /></Suspense> },
-  { path: 'email', element: <Suspense fallback={<Loader />}><EmailInbox /></Suspense> },
+  { path: 'email', loader: () => { window.location.replace('/email/inbox'); return null; } },
+  { path: 'email/compose', element: <Suspense fallback={<Loader />}><EmailCompose /></Suspense> },
+  { path: 'email/drafts', element: <Suspense fallback={<Loader />}><EmailDrafts /></Suspense> },
+  { path: 'email/scheduled', element: <Suspense fallback={<Loader />}><EmailScheduled /></Suspense> },
+  { path: 'email/:folder', element: <Suspense fallback={<Loader />}><EmailInbox /></Suspense> },
   { path: 'messages', element: <Suspense fallback={<Loader />}><Messages /></Suspense> },
   { path: 'proforma/:number', element: <Suspense fallback={<Loader />}><ProformaDetail /></Suspense> },
       {
