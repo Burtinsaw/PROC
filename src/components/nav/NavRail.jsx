@@ -124,7 +124,7 @@ export default function NavRail({ onHoverItem, activeId, onRegisterFocusApi, col
                     ? `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
                     : 'transparent',
                   '&:hover': { background: active? undefined : (theme.palette.mode==='dark'? 'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)') },
-                  '&:focus-visible': {
+                  '&:focusVisible': {
                     outline: '2px solid',
                     outlineColor: theme.palette.primary.main,
                     outlineOffset: 2

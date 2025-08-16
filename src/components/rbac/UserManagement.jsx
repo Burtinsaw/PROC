@@ -2,9 +2,10 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Box, Button, Typography, Stack, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material';
 import { toast } from 'sonner';
 import ContentContainer from '../layout/ContentContainer';
-import { DataGrid } from '@mui/x-data-grid';
+import { lazy, Suspense } from 'react';
 import axios from '../../utils/axios';
 import { updateStatus, resetPassword, deleteUser, createUser } from '../../services/adminUsersService';
+const UsersGrid = lazy(() => import('./UsersGrid'));
 
 const UserManagement = () => {
   const [rows, setRows] = useState([]);
@@ -118,14 +119,9 @@ const UserManagement = () => {
         <Typography color="error" sx={{ mb: 1 }}>{error}</Typography>
       )}
       <div style={{ height: 520, width: '100%' }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          pageSizeOptions={[10, 25, 50]}
-          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-          loading={loading}
-          disableRowSelectionOnClick
-        />
+        <Suspense fallback={<Typography variant="body2" color="text.secondary">Tablo yükleniyor…</Typography>}>
+          <UsersGrid rows={rows} columns={columns} loading={loading} />
+        </Suspense>
       </div>
       <Dialog open={createOpen} onClose={() => !creating && setCreateOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Yeni Kullanıcı</DialogTitle>

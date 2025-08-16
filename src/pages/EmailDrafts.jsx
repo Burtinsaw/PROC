@@ -31,12 +31,17 @@ export default function EmailDrafts(){
           {(items||[]).map(d => (
             <ListItem key={d.id} disablePadding secondaryAction={<span>{dayjs(d.updatedAt).format('DD.MM HH:mm')}</span>}>
               <ListItemButton onClick={()=> navigate(`/email/compose?id=${d.id}`)}>
-                <ListItemText primary={d.subject || '(Konu yok)'} secondary={(d.to || '').slice(0, 60)} />
+                <ListItemText
+                  primaryTypographyProps={{ component: 'div' }}
+                  secondaryTypographyProps={{ component: 'div' }}
+                  primary={d.subject || '(Konu yok)'}
+                  secondary={(d.to || '').slice(0, 60)}
+                />
               </ListItemButton>
             </ListItem>
           ))}
           {!loading && (!items || items.length === 0) && (
-            <ListItem><ListItemText primary="Taslak bulunamadı" /></ListItem>
+            <ListItem><ListItemText primaryTypographyProps={{ component: 'div' }} primary="Taslak bulunamadı" /></ListItem>
           )}
         </List>
       </Paper>

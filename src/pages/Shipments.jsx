@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { Box, Stack, Button, CircularProgress } from '@mui/material';
 import StatusChip from '../components/common/StatusChip';
-import { DataGrid } from '@mui/x-data-grid';
+// DataGrid'i lazy alt bileşene taşıdık
+const ShipmentsGrid = lazy(() => import('../tables/ShipmentsGrid'));
 import PageHeader from '../components/common/PageHeader';
 import MainCard from '../components/common/MainCard';
 import axios from '../utils/axios';
@@ -33,23 +34,12 @@ export default function Shipments() {
       <PageHeader title="Sevkiyatlar" description="Takipteki sevkiyatlar" right={<Button onClick={load} variant="outlined">Yenile</Button>} />
       <MainCard content={false} sx={{ mt:1 }}>
         <Box sx={{ height: 520 }}>
-          {loading ? <Stack alignItems="center" justifyContent="center" sx={{ height:'100%' }}><CircularProgress /></Stack> : (
-            <DataGrid
-              rows={rows}
-              columns={columns}
-              pageSizeOptions={[10,25]}
-              initialState={{ pagination:{ paginationModel:{ pageSize:10 }}}}
-              density="compact"
-              sx={(theme)=>({
-                border: '1px solid',
-                borderColor: theme.palette.divider,
-                borderRadius: 2,
-                '& .MuiDataGrid-columnHeaders': { fontWeight:600 },
-                '& .MuiDataGrid-row:nth-of-type(even)': { backgroundColor: theme.palette.mode==='dark'? 'rgba(255,255,255,0.02)':'rgba(0,0,0,0.02)' },
-                '& .MuiDataGrid-row.Mui-selected': { backgroundColor: theme.palette.action.selected, '&:hover': { backgroundColor: theme.palette.action.selected }},
-                '& .MuiDataGrid-cell': { outline: 'none !important' }
-              })}
-            />
+          {loading ? (
+            <Stack alignItems="center" justifyContent="center" sx={{ height:'100%' }}><CircularProgress /></Stack>
+          ) : (
+            <Suspense fallback={<Stack alignItems="center" justifyContent="center" sx={{ height:'100%' }}><CircularProgress /></Stack>}>
+              <ShipmentsGrid rows={rows} columns={columns} />
+            </Suspense>
           )}
         </Box>
       </MainCard>

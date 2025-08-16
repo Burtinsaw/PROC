@@ -1,11 +1,11 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
+const ProcurementDashboard = lazy(() => import('../pages/ProcurementDashboard'));
 
 // project imports
 import Settings from '../pages/Settings';
 const ThemePreview = lazy(() => import('../pages/ThemePreview'));
 import AppShellLayout from '../layout/AppShellLayout';
-import ProcurementDashboard from '../pages/ProcurementDashboard';
 const SupplierManagement = lazy(() => import('../pages/SupplierManagement'));
 import Forbidden403 from '../pages/Forbidden403';
 import PermissionGuard from '../components/rbac/PermissionGuard';
@@ -35,9 +35,16 @@ const Finance = lazy(() => import('../pages/Finance'));
 const Reports = lazy(() => import('../pages/Reports'));
 const EmailInbox = lazy(() => import('../pages/EmailInbox'));
 const EmailSettings = lazy(() => import('../pages/EmailSettings'));
+const EmailSettingsHub = lazy(() => import('../pages/email-settings/EmailSettingsHub'));
+const EmailSettingsPersonal = lazy(() => import('../pages/email-settings/EmailSettingsPersonal'));
+const EmailSettingsRules = lazy(() => import('../pages/email-settings/EmailSettingsRules'));
+const EmailSettingsImporter = lazy(() => import('../pages/email-settings/EmailSettingsImporter'));
+const EmailSettingsClients = lazy(() => import('../pages/email-settings/EmailSettingsClients'));
+const EmailAutoReply = lazy(() => import('../pages/email-settings/EmailAutoReply'));
+const EmailTemplates = lazy(() => import('../pages/email-settings/EmailTemplates'));
 import Loader from '../components/Loader';
 import AdminHome from '../pages/admin/AdminHome';
-import Companies from '../pages/admin/Companies';
+const Companies = lazy(() => import('../pages/admin/Companies'));
 const Messages = lazy(() => import('../pages/Messages'));
 import { ChatProvider } from '../contexts/ChatContext';
 const EmailCompose = lazy(() => import('../pages/EmailCompose'));
@@ -109,11 +116,18 @@ const router = createBrowserRouter([
           } catch { /* ignore */ }
           return null;
         },
-        element: <ProcurementDashboard />,
+  element: <Suspense fallback={<Loader />}><ProcurementDashboard /></Suspense>,
       },
   { path: 'settings', element: <Settings /> },
   { path: 'settings/theme-preview', element: <Suspense fallback={<Loader />}><ThemePreview /></Suspense> },
-  { path: 'settings/email', element: <Suspense fallback={<Loader />}><EmailSettings /></Suspense> },
+  { path: 'settings/email', element: <Suspense fallback={<Loader />}><EmailSettingsHub /></Suspense> },
+  { path: 'settings/email/legacy', element: <Suspense fallback={<Loader />}><EmailSettings /></Suspense> },
+  { path: 'settings/email/personal', element: <Suspense fallback={<Loader />}><EmailSettingsPersonal /></Suspense> },
+  { path: 'settings/email/rules', element: <Suspense fallback={<Loader />}><EmailSettingsRules /></Suspense> },
+  { path: 'settings/email/importer', element: <Suspense fallback={<Loader />}><EmailSettingsImporter /></Suspense> },
+  { path: 'settings/email/clients', element: <Suspense fallback={<Loader />}><EmailSettingsClients /></Suspense> },
+  { path: 'settings/email/templates', element: <Suspense fallback={<Loader />}><EmailTemplates /></Suspense> },
+  { path: 'settings/email/auto-reply', element: <Suspense fallback={<Loader />}><EmailAutoReply /></Suspense> },
   // Legacy redirects from eski /requests yapısı
   { path: 'requests', loader: () => { window.location.replace('/talep'); return null; } },
   { path: 'requests/new', loader: () => { window.location.replace('/talep/yeni'); return null; } },
@@ -191,7 +205,7 @@ const router = createBrowserRouter([
         path: 'admin/companies',
         element: (
           <PermissionGuard anyOf={["users:read","settings:write"]}>
-            <Companies />
+            <Suspense fallback={<Loader />}><Companies /></Suspense>
           </PermissionGuard>
         ),
       },

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Chip, CircularProgress, Paper, Stack, TextField, Typography, Tooltip } from '@mui/material';
 import StatusChip from '../components/common/StatusChip';
-import { DataGrid } from '@mui/x-data-grid';
+import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
@@ -11,6 +11,7 @@ import TableSkeleton from '../components/common/skeletons/TableSkeleton';
 import EmptyState from '../components/common/EmptyState';
 import FilterBar from '../components/table/FilterBar';
 import usePermissions from '../hooks/usePermissions';
+const RFQsGrid = lazy(() => import('../tables/RFQsGrid'));
 
 export default function RFQs() {
 	const navigate = useNavigate();
@@ -107,24 +108,13 @@ export default function RFQs() {
 						) : filteredRows.length===0 ? (
 							<EmptyState title="Kayıt yok" description="Aramanızı değiştirin veya yeni RFQ oluşturun." />
 						) : (
-							<DataGrid
-								rows={filteredRows}
-								columns={columns}
-								disableRowSelectionOnClick
-								onRowClick={(p) => navigate(`/rfqs/${p.id}`)}
-								pageSizeOptions={[10, 25, 50]}
-								initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-								density="compact"
-								sx={(theme)=>({
-									border: '1px solid',
-									borderColor: theme.palette.divider,
-									borderRadius: 12,
-									'& .MuiDataGrid-columnHeaders': { fontWeight: 600 },
-									'& .MuiDataGrid-row:nth-of-type(even)': { backgroundColor: theme.palette.mode==='dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' },
-									'& .MuiDataGrid-row.Mui-selected': { backgroundColor: theme.palette.action.selected, '&:hover': { backgroundColor: theme.palette.action.selected }},
-									'& .MuiDataGrid-cell': { outline: 'none !important' }
-								})}
-							/>
+							<Suspense fallback={<TableSkeleton rows={8} columns={7} />}>
+								<RFQsGrid
+									rows={filteredRows}
+									columns={columns}
+									onRowClick={(p) => navigate(`/rfqs/${p.id}`)}
+								/>
+							</Suspense>
 						)}
 					</Box>
 				</MainCard>

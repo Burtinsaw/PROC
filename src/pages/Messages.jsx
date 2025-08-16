@@ -192,7 +192,12 @@ export default function Messages(){
                     try { setMessages(await adminGetChat(c.u1?.id, c.u2?.id)); setActive({ type:'admin-dm', id:`${c.u1?.id}-${c.u2?.id}` }); } catch { /* ignore */ }
                   }}>
                     <ListItemAvatar><Avatar>{(c.u1?.firstName||c.u1?.username||'?')[0]}</Avatar></ListItemAvatar>
-                    <ListItemText primary={`${c.u1?.firstName||c.u1?.username} ↔ ${c.u2?.firstName||c.u2?.username}`} secondary={c.lastMessage?.content} />
+                    <ListItemText
+                      primaryTypographyProps={{ component: 'div' }}
+                      secondaryTypographyProps={{ component: 'div' }}
+                      primary={`${c.u1?.firstName||c.u1?.username} ↔ ${c.u2?.firstName||c.u2?.username}`}
+                      secondary={c.lastMessage?.content}
+                    />
                   </ListItem>
                 ))}
               </List>
@@ -205,7 +210,12 @@ export default function Messages(){
                 <ListItemAvatar>
                   <Avatar sx={{ bgcolor: isOnline(u.id) ? 'success.main' : 'grey.500' }}>{(u.firstName||u.username||'?')[0]}</Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={`${u.firstName||''} ${u.lastName||''}`.trim() || u.username} secondary={isOnline(u.id) ? 'Çevrimiçi' : 'Çevrimdışı'} />
+                <ListItemText
+                  primaryTypographyProps={{ component: 'div' }}
+                  secondaryTypographyProps={{ component: 'div' }}
+                  primary={`${u.firstName||''} ${u.lastName||''}`.trim() || u.username}
+                  secondary={isOnline(u.id) ? 'Çevrimiçi' : 'Çevrimdışı'}
+                />
               </ListItem>
             ))}
           </List>

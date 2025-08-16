@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import dayjs from 'dayjs';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { listInbox, seedInbox, listAccounts, imapSyncNow, updateMessageFlags, moveMessage } from '../api/email';
 import { markSpam, markHam } from '../api/email';
 import {
-  Box, Stack, Divider, Typography, TextField, IconButton, Button, Chip,
+  Box, Stack, Divider, Typography, TextField, IconButton, Button,
   List, ListItemButton, ListItemText, Tooltip,
   Switch, FormControlLabel, Paper
 } from '@mui/material';
@@ -15,9 +16,12 @@ import InboxIcon from '@mui/icons-material/Inbox';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import StarIcon from '@mui/icons-material/Star';
 import CreateIcon from '@mui/icons-material/Create';
+import PushPinIcon from '@mui/icons-material/PushPin';
+import MarkEmailUnreadIcon from '@mui/icons-material/MarkEmailUnread';
 import ContentContainer from '../components/layout/ContentContainer';
 import { useChat } from '../contexts/ChatContext';
 
+// Şirket renkleri artık üstte chip olarak kullanılmıyor; sol panelde şirket listesi için tutulabilir.
 const COMPANY_COLORS = { BN: '#1f77b4', YN: '#ff7f0e', AL: '#2ca02c', TG: '#d62728', OT: '#9467bd', NZ: '#8c564b' };
 
 export default function EmailInbox(){
@@ -26,25 +30,35 @@ export default function EmailInbox(){
   const navigate = useNavigate();
   const chat = useChat();
   const [q, setQ] = useState('');
-  const [companies, setCompanies] = useState([]);
+  // Basit debounce helper
+  const useDebounce = (val, delay) => {
+    const [d, setD] = useState(val);
+    useEffect(() => {
+      const id = setTimeout(() => setD(val), delay);
+      return () => clearTimeout(id);
+    }, [val, delay]);
+    return d;
+  };
+  const qDebounced = useDebounce(q, 300);
+  // Üst çubuk: Bugünkü okunmayanlar ve Pin'ler
+  const [todayUnread, setTodayUnread] = useState(false);
+  const [showPins, setShowPins] = useState(false);
+  const todayUnreadDebounced = useDebounce(todayUnread, 150);
+  const showPinsDebounced = useDebounce(showPins, 150);
+  // Sol panelde tek seçimli şirket filtresi
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   // hesap yönetimi bu sayfada değil; Ayarlar'a taşındı
   const [showPreview, setShowPreview] = useState(true);
   const [compact, setCompact] = useState(false);
   const [folder, setFolder] = useState('INBOX');
-  const [customFolders, setCustomFolders] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('email.customFolders')||'[]'); } catch { return []; }
-  });
-  const [newFolder, setNewFolder] = useState('');
+  // Klasör UI'ı bu sayfadan kaldırıldı; sadece URL'den okunur.
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(50);
-  const [emailCountsVersion, setEmailCountsVersion] = useState(0);
 
   // Kullanıcı tercihlerini yükle
   useEffect(() => {
     try {
-      const defCompanies = JSON.parse(localStorage.getItem('email.defaultCompanies') || '[]');
-      if (Array.isArray(defCompanies)) setCompanies(defCompanies);
       setShowPreview(localStorage.getItem('email.previewPane') !== 'false');
       setCompact(localStorage.getItem('email.listDensity') === 'compact');
     } catch { /* ignore */ }
@@ -65,18 +79,15 @@ export default function EmailInbox(){
       const sp = new URLSearchParams(location.search || '');
       const v = sp.get('q') || '';
       setQ(v);
+  const comp = sp.get('company');
+  setSelectedCompany(comp || null);
       setPage(0);
     } catch { /* ignore */ }
   }, [location.search]);
 
   // (refetch'e bağlı effectler useQuery tanımının altına taşındı)
 
-  // Global email counts change → refresh spam chip immediately
-  useEffect(()=>{
-    const onChange = ()=> setEmailCountsVersion(v => v + 1);
-    window.addEventListener('email-counts-changed', onChange);
-    return ()=> window.removeEventListener('email-counts-changed', onChange);
-  }, []);
+  // Global email counts değişince listeyi tazelemek için ayrı bir state tutmaya gerek yok.
 
   // Hesaplarım
   const { data: accData } = useQuery({ queryKey:['email-accounts'], queryFn: ()=>listAccounts() });
@@ -84,15 +95,26 @@ export default function EmailInbox(){
 
   // Inbox veri
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['email-inbox', q, companies.join(','), accounts.map(a=>a.id).join(','), folder, page, limit],
-    queryFn: ()=>{
+    queryKey: ['email-inbox', qDebounced, selectedCompany || '', accounts.map(a=>a.id).join(','), folder, page, limit, todayUnreadDebounced, showPinsDebounced],
+    queryFn: ({ signal })=>{
       const isStarred = folder === 'STARRED';
       const f = isStarred ? undefined : folder;
-      return listInbox({ limit, offset: page*limit, q, companies, folder: f, flagged: isStarred ? true : undefined });
-    }
+      const companiesParam = selectedCompany ? [selectedCompany] : undefined;
+      const flaggedParam = showPinsDebounced ? true : (isStarred ? true : undefined);
+      const unreadParam = todayUnreadDebounced ? true : undefined;
+      return listInbox({ limit, offset: page*limit, q: qDebounced, companies: companiesParam, folder: f, flagged: flaggedParam, unread: unreadParam }, { signal });
+    },
+    keepPreviousData: true,
+    retry: false,
   });
-  const items = useMemo(()=> data?.items || [], [data]);
-  const total = data?.total || 0;
+  // İstemci tarafı "bugün" süzgeci (API'den unread=true gelir; tarih kontrolü burada yapılır)
+  const rawItems = useMemo(()=> data?.items || [], [data]);
+  const items = useMemo(()=> {
+    if (!todayUnread) return rawItems;
+    const today = dayjs();
+    return rawItems.filter(m => m?.date && dayjs(m.date).isSame(today, 'day') && (m.unread === true));
+  }, [rawItems, todayUnread]);
+  const total = items.length;
   const selected = useMemo(()=> items.find(x=> (x.id||x.messageId) === selectedId ) || items[0], [items, selectedId]);
 
   // Hesap CRUD artık Ayarlar > E-Posta sayfasında yönetiliyor
@@ -110,13 +132,18 @@ export default function EmailInbox(){
   }, [refetch]);
 
   // Email counts real-time → listeyi tazele (spam taşıma vb. sonrası)
+  const refetchTimer = useRef(null);
+  const scheduleRefetch = useCallback(() => {
+    if (refetchTimer.current) clearTimeout(refetchTimer.current);
+    refetchTimer.current = setTimeout(() => { refetch(); }, 250);
+  }, [refetch]);
   useEffect(()=>{
-    const onCounts = ()=> { refetch(); };
+    const onCounts = ()=> { scheduleRefetch(); };
     window.addEventListener('email-counts-changed', onCounts);
-    const onSockCounts = ()=> { refetch(); };
+    const onSockCounts = ()=> { scheduleRefetch(); };
   chat?.socket?.on?.('email:counts_changed', onSockCounts);
-  return ()=> { window.removeEventListener('email-counts-changed', onCounts); chat?.socket?.off?.('email:counts_changed', onSockCounts); };
-  }, [refetch, chat]);
+  return ()=> { window.removeEventListener('email-counts-changed', onCounts); chat?.socket?.off?.('email:counts_changed', onSockCounts); if (refetchTimer.current) clearTimeout(refetchTimer.current); };
+  }, [refetch, chat, scheduleRefetch]);
 
   // q değişince URL ?q= parametresini güncel tut
   useEffect(() => {
@@ -124,11 +151,12 @@ export default function EmailInbox(){
       const sp = new URLSearchParams(location.search || '');
       if ((sp.get('q') || '') !== (q || '')) {
         if (q) sp.set('q', q); else sp.delete('q');
+    if (selectedCompany) sp.set('company', selectedCompany); else sp.delete('company');
     const url = `${location.pathname}${sp.toString() ? `?${sp.toString()}` : ''}`;
         window.history.replaceState(null, '', url);
       }
     } catch { /* ignore */ }
-  }, [q, location.pathname, location.search]);
+  }, [q, selectedCompany, location.pathname, location.search]);
 
   return (
   <ContentContainer disableGutters>
@@ -147,14 +175,22 @@ export default function EmailInbox(){
               onChange={(e)=> setQ(e.target.value)}
             />
           </Box>
-          <Stack direction="row" spacing={1} alignItems="center">
-            {Object.keys(COMPANY_COLORS).map(code => (
-              <Chip key={code} size="small" label={code}
-                color={companies.includes(code) ? 'primary' : 'default'}
-                variant={companies.includes(code) ? 'filled' : 'outlined'}
-                onClick={()=> setCompanies(v => v.includes(code) ? v.filter(x=>x!==code) : [...v, code])}
-              />
-            ))}
+          {/* Üst filtreler: ikon butonları */}
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <Tooltip title="Bugün • Okunmayanlar">
+              <span>
+                <IconButton size="small" color={todayUnread ? 'primary' : 'default'} onClick={()=> { setTodayUnread(v=>!v); setPage(0); }}>
+                  <MarkEmailUnreadIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="Pin'ler">
+              <span>
+                <IconButton size="small" color={showPins ? 'primary' : 'default'} onClick={()=> { setShowPins(v=>!v); setPage(0); setFolder('INBOX'); }}>
+                  <PushPinIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
           </Stack>
           <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
       <Tooltip title="IMAP Senkron">
@@ -181,45 +217,33 @@ export default function EmailInbox(){
           }} />} label={<Typography variant="caption">Kompakt</Typography>} />
         </Stack>
 
-  {/* İçerik: Sol (hesaplar) | Orta (liste) | Sağ (önizleme) */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: showPreview ? '280px 1fr 38%' : '300px 1fr', height: '100%' }}>
+  {/* İçerik: Sol (şirket gelen kutuları) | Orta (liste) | Sağ (önizleme) */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: showPreview ? '240px 1fr 38%' : '260px 1fr', height: '100%' }}>
           {/* Sol panel */}
-      <Box sx={{ borderRight: '1px solid', borderColor: 'divider', p: 1.5, overflow: 'auto' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Klasörler</Typography>
+          <Box sx={{ borderRight: '1px solid', borderColor: 'divider', p: 1.5, overflow: 'auto' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Gelen Kutuları</Typography>
             <List dense>
-              {['INBOX','SENT','SPAM','TRASH','STARRED','ARCHIVE'].map(f => (
-                <ListItemButton key={f} selected={folder===f} onClick={()=>{ setFolder(f); setPage(0); try{ const slug=f.toLowerCase(); window.history.replaceState(null, '', `/email/${slug}`);}catch{/* noop */} }} sx={{ borderRadius: 1 }}>
-                  <ListItemText
-                    primary={
-                      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ width:'100%' }}>
-                        <span>{({INBOX:'Gelen Kutusu', SENT:'Gönderilen', SPAM:'Spam', TRASH:'Çöp', STARRED:'Yıldızlı', ARCHIVE:'Arşiv'})[f]}</span>
-                        {f==='SPAM' && (window.__emailCounts?.spamUnread > 0) ? (
-                          <Chip key={emailCountsVersion} size="small" color="error" label={window.__emailCounts.spamUnread} />
-                        ) : null}
-                      </Stack>
-                    }
-                  />
-                </ListItemButton>
-              ))}
-              {customFolders.map(f => (
-                <ListItemButton key={f} selected={folder===f} onClick={()=>{ setFolder(f); setPage(0); try{ const slug=f.toLowerCase(); window.history.replaceState(null, '', `/email/${slug}`);}catch{/* noop */} }} sx={{ borderRadius: 1 }}>
-                  <ListItemText primary={f} />
-                </ListItemButton>
-              ))}
+              <ListItemButton selected={!selectedCompany} onClick={()=> { setSelectedCompany(null); setPage(0); setFolder('INBOX'); try{ window.history.replaceState(null, '', `/email/inbox`);}catch{/* noop */} }} sx={{ borderRadius: 1 }}>
+                <ListItemText primary="Ortak Gelen Kutusu" />
+              </ListItemButton>
             </List>
-            <Stack direction="row" spacing={1} sx={{ mt: .5 }}>
-              <TextField size="small" placeholder="Yeni klasör" value={newFolder} onChange={(e)=> setNewFolder(e.target.value)} />
-              <Button size="small" variant="outlined" onClick={()=>{
-                const f = String(newFolder||'').trim(); if(!f) return;
-                const F = f.toUpperCase();
-                setCustomFolders(prev => {
-                  if(prev.includes(F)) return prev; const next = [...prev, F];
-                  try{ localStorage.setItem('email.customFolders', JSON.stringify(next)); }catch{/* ignore */}
-                  return next;
-                });
-                setNewFolder('');
-              }}>Ekle</Button>
-            </Stack>
+            <Divider sx={{ my: 1 }} />
+            <Typography variant="body2" color="text.secondary" sx={{ mb: .5 }}>Firma Gelen Kutuları</Typography>
+            <List dense>
+              {Array.from(new Set((accounts||[]).map(a=>a.companyCode).filter(Boolean))).map(code => (
+                <ListItemButton key={code} selected={selectedCompany===code} onClick={()=> { setSelectedCompany(code); setPage(0); setFolder('INBOX'); try{ window.history.replaceState(null, '', `/email/inbox?company=${encodeURIComponent(code)}`);}catch{/* noop */} }} sx={{ borderRadius: 1 }}>
+                  <ListItemText primaryTypographyProps={{ component:'div' }} primary={
+                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ width:'100%' }}>
+                      <span>{code}</span>
+                      <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: COMPANY_COLORS[code] || 'divider' }} />
+                    </Stack>
+                  } />
+                </ListItemButton>
+              ))}
+              {Array.from(new Set((accounts||[]).map(a=>a.companyCode).filter(Boolean))).length === 0 && (
+                <ListItemButton disabled><ListItemText primary="Kayıtlı firma bulunamadı" /></ListItemButton>
+              )}
+            </List>
 
             <Divider sx={{ my: 1.5 }} />
             <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>Hesap Yönetimi</Typography>
@@ -250,26 +274,28 @@ export default function EmailInbox(){
                       sx={{ alignItems: 'flex-start', borderBottom: '1px solid', borderColor: 'divider' }}
                     >
                       <ListItemText
+                        primaryTypographyProps={{ component: 'div' }}
+                        secondaryTypographyProps={{ component: 'div' }}
                         primary={
                           <Stack direction="row" spacing={1} alignItems="center" sx={{ pr: 1 }}>
-                            <Typography sx={{ fontWeight: 700, flex: 1, minWidth: 0 }} noWrap>{m.subject || '(Konu yok)'}</Typography>
-                            <Typography variant="caption" color="text.secondary">{m.date ? new Date(m.date).toLocaleString() : ''}</Typography>
+                            <Typography component="div" sx={{ fontWeight: 700, flex: 1, minWidth: 0 }} noWrap>{m.subject || '(Konu yok)'}</Typography>
+                            <Typography component="span" variant="caption" color="text.secondary">{m.date ? new Date(m.date).toLocaleString() : ''}</Typography>
                           </Stack>
                         }
                         secondary={
                           <>
-                              <Typography variant="body2" color="text.secondary" noWrap sx={{ flex: 1, minWidth: 0 }}>
-                                {m.snippet || m.bodyText?.slice(0,140)}
-                              </Typography>
-                            <Typography variant="caption" color="text.secondary">From: {m.from} • To: {m.to}</Typography>
+                            <Typography component="div" variant="body2" color="text.secondary" noWrap sx={{ flex: 1, minWidth: 0 }}>
+                              {m.snippet || m.bodyText?.slice(0,140)}
+                            </Typography>
+                            <Typography component="div" variant="caption" color="text.secondary">From: {m.from} • To: {m.to}</Typography>
                           </>
                         }
                       />
-                      <Tooltip title={m.flagged ? 'Yıldızlı' : 'Yıldızla'}>
+                      <Tooltip title={m.flagged ? 'Pinned' : 'Pinle'}>
                         <IconButton size="small" edge="end" sx={{ ml: 1 }} onClick={async (e)=>{ e.stopPropagation(); await updateMessageFlags(m.id||m.messageId, { flagged: !m.flagged }); qc.invalidateQueries({ queryKey:['email-inbox'] }); }}>
-                          {m.flagged ? <StarIcon fontSize="small" color="warning" /> : <StarBorderIcon fontSize="small" />}
+              {m.flagged ? <StarIcon fontSize="small" color="warning" /> : <StarBorderIcon fontSize="small" />}
                         </IconButton>
-                      </Tooltip>
+            </Tooltip>
                     </ListItemButton>
                   );
                 })}
@@ -303,12 +329,12 @@ export default function EmailInbox(){
                   <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
                     <Box>
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography variant="h6" sx={{ fontWeight: 700 }}>{selected.subject || '(Konu yok)'}</Typography>
+                        <Typography component="div" variant="h6" sx={{ fontWeight: 700 }}>{selected.subject || '(Konu yok)'}</Typography>
                       </Stack>
                       <Stack spacing={0.5} sx={{ mt: 1 }}>
-                        <Typography variant="caption" color="text.secondary">From: {selected.from}</Typography>
-                        <Typography variant="caption" color="text.secondary">To: {selected.to}</Typography>
-                        <Typography variant="caption" color="text.secondary">Tarih: {selected.date ? new Date(selected.date).toLocaleString() : ''}</Typography>
+                        <Typography component="div" variant="caption" color="text.secondary">From: {selected.from}</Typography>
+                        <Typography component="div" variant="caption" color="text.secondary">To: {selected.to}</Typography>
+                        <Typography component="div" variant="caption" color="text.secondary">Tarih: {selected.date ? new Date(selected.date).toLocaleString() : ''}</Typography>
                       </Stack>
                     </Box>
                   </Stack>

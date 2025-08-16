@@ -33,8 +33,8 @@ export default function LogisticsDashboard(){
       setStats(s?.data || {});
       setNotifications(n?.data?.notifications || []);
       setEvents(e?.data?.events || e?.data || []);
-    } catch (err){
-      console.error('Lojistik panel yükleme hatası', err);
+  } catch {
+      // Hata detayı konsola basılmıyor; sağ altta toast gösteriyoruz
       toast.error('Lojistik verileri alınamadı');
     } finally {
       setLoading(false);
@@ -55,12 +55,12 @@ export default function LogisticsDashboard(){
 
       {!loading && (
         <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <MainCard title="Durum Özeti">
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={4}><StatCard title="Açık Sevkiyat" value={stats?.openShipments} /></Grid>
-                <Grid item xs={12} sm={6} md={4}><StatCard title="Bekleyen Ödeme" value={stats?.pendingPrepayments} color="warning.main" /></Grid>
-                <Grid item xs={12} sm={6} md={4}><StatCard title="Kritik Uyarı" value={stats?.criticalAlerts} color="error.main" /></Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}><StatCard title="Açık Sevkiyat" value={stats?.openShipments} /></Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}><StatCard title="Bekleyen Ödeme" value={stats?.pendingPrepayments} color="warning.main" /></Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}><StatCard title="Kritik Uyarı" value={stats?.criticalAlerts} color="error.main" /></Grid>
               </Grid>
             </MainCard>
 
@@ -72,6 +72,8 @@ export default function LogisticsDashboard(){
                   {events.map((ev) => (
                     <ListItem key={ev.id} divider>
                       <ListItemText
+                        primaryTypographyProps={{ component: 'div' }}
+                        secondaryTypographyProps={{ component: 'div' }}
                         primary={ev.title}
                         secondary={(ev.date ? new Date(ev.date).toLocaleString('tr-TR') : '-') + (ev.description ? ' — ' + ev.description : '')}
                       />
@@ -82,7 +84,7 @@ export default function LogisticsDashboard(){
               )}
             </MainCard>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <MainCard title={`Bildirimler ${notifications.length ? '('+notifications.filter(n=>!n.isRead).length+' okunmamış)' : ''}`}>
               {notifications.length === 0 ? (
                 <Typography color="text.secondary">Bildirim yok</Typography>
@@ -90,7 +92,12 @@ export default function LogisticsDashboard(){
                 <List dense>
                   {notifications.map((n) => (
                     <ListItem key={n.id} divider>
-                      <ListItemText primary={n.title} secondary={n.message} />
+                      <ListItemText
+                        primaryTypographyProps={{ component: 'div' }}
+                        secondaryTypographyProps={{ component: 'div' }}
+                        primary={n.title}
+                        secondary={n.message}
+                      />
                       {n.priority && <Chip size="small" color={n.priority === 'kritik' ? 'error' : 'warning'} label={n.priority.toUpperCase()} />}
                     </ListItem>
                   ))}

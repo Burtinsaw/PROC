@@ -6,6 +6,7 @@ import { ChevronDown } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import navConfig from '../../navigation/navConfig';
 import BackendStatus from '../BackendStatus';
+import { prefetchRoute } from '../../utils/prefetchRoutes';
 
 export const ACC_SIDEBAR_WIDTH = 260;
 const HEADER_HEIGHT = 56; // align with AppShellHeader height
@@ -50,6 +51,7 @@ export default function AccordionSidebar({ leftOffset = 0, topOffset = 56, onCol
   <Box
       role="navigation"
       aria-label="Uygulama menüsü"
+  className="hide-scrollbar"
       sx={(theme)=>(
         {
     position:'fixed', top: topOffset, left: leftOffset, bottom:0,
@@ -60,8 +62,10 @@ export default function AccordionSidebar({ leftOffset = 0, topOffset = 56, onCol
               ? 'linear-gradient(180deg, rgba(17,24,39,0.85), rgba(17,24,39,0.6))'
               : 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7))')
           : theme.palette.background.paper,
-        backdropFilter: theme.preset==='aurora'? 'blur(18px)' : undefined,
-        overflowY:'auto'
+  backdropFilter: theme.preset==='aurora'? 'blur(18px)' : undefined,
+  overflowY:'auto',
+  WebkitOverflowScrolling: 'touch',
+  overscrollBehavior: 'contain'
       })}
     >
   <List disablePadding sx={{ py: 1.5, mt: 2, pb: 28 }}>
@@ -76,6 +80,8 @@ export default function AccordionSidebar({ leftOffset = 0, topOffset = 56, onCol
               <Tooltip title={item.label} placement="right" disableInteractive>
                 <ListItemButton
                   onClick={() => hasChildren ? toggle(item.id) : (item.path && navigate(item.path))}
+                  onMouseEnter={() => { if (item.path) prefetchRoute(item.path); }}
+                  onFocus={() => { if (item.path) prefetchRoute(item.path); }}
                   aria-expanded={hasChildren ? open : undefined}
                   sx={(theme)=>(
                     {
@@ -111,12 +117,14 @@ export default function AccordionSidebar({ leftOffset = 0, topOffset = 56, onCol
                             {group.label}
                           </Box>
                         )}
-                        {group.links.map(link => {
+        {group.links.map(link => {
                           const active = isActivePath(link.path);
                           return (
               <ListItemButton
                               key={link.id}
-                              onClick={()=> navigate(link.path)}
+          onClick={()=> navigate(link.path)}
+          onMouseEnter={() => prefetchRoute(link.path)}
+          onFocus={() => prefetchRoute(link.path)}
                               aria-current={active? 'page': undefined}
                               sx={(theme)=>(
                                 {

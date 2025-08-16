@@ -20,12 +20,12 @@ function App() {
   return (
   <ThemeProvider>
   <CssBaseline />
-  <Toaster richColors position="top-center" />
+  <Toaster richColors position="bottom-right" />
       <ErrorBoundary>
         <AuthProvider>
           <LanguageProvider>
       <QueryClientProvider>
-  {/* dev ping removed */}
+  {/* Router */}
   <RouterProvider router={router} />
       </QueryClientProvider>
           </LanguageProvider>

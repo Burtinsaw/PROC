@@ -9,7 +9,7 @@ import { useAppTheme } from '../../contexts/useAppTheme';
 import { useAuth } from '../../contexts/useAuth';
 import { getUnreadCount } from '../../api/messages';
 import { useChat } from '../../contexts/ChatContext';
-import { getCounts as getEmailCounts } from '../../api/email';
+import { getCounts as getEmailCounts, harvestContacts } from '../../api/email';
 import EmailHeaderToolbar from '../email/EmailHeaderToolbar';
 
 function findMatch(pathname) {
@@ -87,6 +87,7 @@ export default function AppShellHeader() {
   const [langAnchor, setLangAnchor] = useState(null);
   const [unread, setUnread] = useState(0);
   const isEmail = location.pathname.startsWith('/email');
+  const isEmailCompose = location.pathname.startsWith('/email/compose');
   // Poll + socket tetikleyici
   useEffect(() => {
     let mounted = true;
@@ -152,6 +153,62 @@ export default function AppShellHeader() {
     return ()=> { if(timer) clearInterval(timer); chat?.socket?.off?.('email:counts_changed', onCounts); };
   }, [chat?.socket]);
 
+  // Her gün mesai bitimine yakın (16:35) mesajlardan adres toplama (bir kez/gün)
+  useEffect(() => {
+    let timer;
+    let inFlight = false;
+    const fmtDate = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const checkAndRun = async () => {
+      try {
+        const now = new Date();
+        const hh = now.getHours();
+        const mm = now.getMinutes();
+        const today = fmtDate(now);
+        const last = localStorage.getItem('contacts.harvest.daily.lastRunDate') || '';
+        // 16:35 ve sonrası için, gün içinde bir kez çalıştır
+        if (!inFlight && last !== today && (hh > 16 || (hh === 16 && mm >= 35))) {
+          inFlight = true;
+          try {
+            await harvestContacts([]); // tüm hesaplar (kullanıcıya ait) için tarama
+            localStorage.setItem('contacts.harvest.daily.lastRunDate', today);
+          } catch {
+            // Başarısızsa 30 dk sonra tekrar denemek üzere nextTry işareti bırak
+            const next = new Date(now.getTime() + 30 * 60 * 1000).toISOString();
+            localStorage.setItem('contacts.harvest.daily.nextTryAt', next);
+            if (import.meta.env.DEV) console.info('contacts.harvest retry scheduled at', next);
+          } finally {
+            inFlight = false;
+          }
+          return;
+        }
+        // Eğer today çalıştırılmadı ve nextTryAt geçtiyse tekrar dene
+        if (!inFlight && last !== today) {
+          const nextTryAt = localStorage.getItem('contacts.harvest.daily.nextTryAt');
+          if (nextTryAt && new Date(nextTryAt) <= now) {
+            inFlight = true;
+            try {
+              await harvestContacts([]);
+              localStorage.setItem('contacts.harvest.daily.lastRunDate', today);
+              localStorage.removeItem('contacts.harvest.daily.nextTryAt');
+            } catch {
+              const next = new Date(now.getTime() + 30 * 60 * 1000).toISOString();
+              localStorage.setItem('contacts.harvest.daily.nextTryAt', next);
+              if (import.meta.env.DEV) console.info('contacts.harvest retry scheduled at', next);
+            } finally {
+              inFlight = false;
+            }
+          }
+        }
+      } catch {
+        // sessizce geç
+      }
+    };
+    // Hemen kontrol et ve sonra her 60 sn’de bir
+    checkAndRun();
+    timer = setInterval(checkAndRun, 60000);
+    return () => { if (timer) clearInterval(timer); };
+  }, []);
+
   return (
     <Box
       component="header"
@@ -179,7 +236,8 @@ export default function AppShellHeader() {
           {breadcrumbs.map((c,i)=> {
             const Icon = c.icon;
             const last = i === breadcrumbs.length -1;
-            if (i === 0 && Icon) {
+            // Son olmayan tüm kırıntılar tıklanabilir olsun
+            if (!last) {
               return (
                 <MuiLink
                   component={Link}
@@ -189,18 +247,18 @@ export default function AppShellHeader() {
                   color="text.secondary"
                   sx={{ display:'inline-flex', alignItems:'center', fontSize:12 }}
                 >
-                  <Icon size={12} style={{ marginRight:4 }} />{c.label}
+                  {Icon && <Icon size={12} style={{ marginRight:4 }} />}{c.label}
                 </MuiLink>
               );
             }
             return (
-              <Typography key={c.path} color={last ? 'text.primary':'text.secondary'} sx={{ fontSize:12, fontWeight:last?500:400, display:'inline-flex', alignItems:'center' }}>
+              <Typography key={c.path} color='text.primary' sx={{ fontSize:12, fontWeight:500, display:'inline-flex', alignItems:'center' }}>
                 {Icon && <Icon size={12} style={{ marginRight:4, verticalAlign:'middle' }} />}{c.label}
               </Typography>
             );
           })}
         </Breadcrumbs>
-        {isEmail && (
+        {isEmail && !isEmailCompose && (
           <Box>
             <EmailHeaderToolbar />
           </Box>

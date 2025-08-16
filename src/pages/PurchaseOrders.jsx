@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Stack, Button, CircularProgress } from '@mui/material';
 import StatusChip from '../components/common/StatusChip';
-import { DataGrid } from '@mui/x-data-grid';
+import { lazy, Suspense, useMemo } from 'react';
 import PageHeader from '../components/common/PageHeader';
 import FilterBar from '../components/table/FilterBar';
 import TableSkeleton from '../components/common/skeletons/TableSkeleton';
@@ -9,6 +9,7 @@ import EmptyState from '../components/common/EmptyState';
 import MainCard from '../components/common/MainCard';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
+const PurchaseOrdersGrid = lazy(() => import('../tables/PurchaseOrdersGrid'));
 
 export default function PurchaseOrders() {
   const [rows, setRows] = useState([]);
@@ -37,13 +38,13 @@ export default function PurchaseOrders() {
 
   useEffect(() => { load(); }, []);
 
-  const columns = [
+  const columns = useMemo(() => [
     { field: 'poNumber', headerName: 'PO No', flex: 0.8, minWidth: 140 },
     { field: 'supplier', headerName: 'Tedarikçi', flex: 1, minWidth: 180 },
   { field: 'status', headerName: 'Durum', flex: 0.7, minWidth: 130, renderCell: ({ value }) => <StatusChip status={value} /> },
     { field: 'totalAmount', headerName: 'Tutar', flex: 0.6, minWidth: 120 },
     { field: 'createdAt', headerName: 'Oluşturma', flex: 0.9, minWidth: 160, valueGetter: ({ value }) => value ? new Date(value).toLocaleString('tr-TR') : '-' }
-  ];
+  ], []);
 
   const statusOptions = Array.from(new Set(rows.map(r=> r.status).filter(Boolean)));
   const filteredRows = rows.filter(r => {
@@ -65,22 +66,9 @@ export default function PurchaseOrders() {
         />
         <Box sx={{ height: 520 }}>
           {loading ? <TableSkeleton rows={8} columns={5} /> : (filteredRows.length===0 ? <EmptyState title="Kayıt yok" description="Filtreleri değiştirin veya veri ekleyin." /> : (
-            <DataGrid
-              rows={filteredRows}
-              columns={columns}
-              pageSizeOptions={[10,25]}
-              initialState={{ pagination:{ paginationModel:{ pageSize:10 }}}}
-              density="compact"
-              sx={(theme)=>({
-                border: '1px solid',
-                borderColor: theme.palette.divider,
-                borderRadius: 2,
-                '& .MuiDataGrid-columnHeaders': { fontWeight:600 },
-                '& .MuiDataGrid-row:nth-of-type(even)': { backgroundColor: theme.palette.mode==='dark'? 'rgba(255,255,255,0.02)':'rgba(0,0,0,0.02)' },
-                '& .MuiDataGrid-row.Mui-selected': { backgroundColor: theme.palette.action.selected, '&:hover': { backgroundColor: theme.palette.action.selected }},
-                '& .MuiDataGrid-cell': { outline: 'none !important' }
-              })}
-            />
+            <Suspense fallback={<TableSkeleton rows={8} columns={5} />}>
+              <PurchaseOrdersGrid rows={filteredRows} columns={columns} />
+            </Suspense>
           ))}
         </Box>
       </MainCard>

@@ -2,11 +2,12 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Stack, CircularProgress, Typography, Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton } from '@mui/material';
 import StatusChip from '../components/common/StatusChip';
-import { DataGrid } from '@mui/x-data-grid';
+import { lazy, Suspense } from 'react';
 import { Trash2 as DeleteIcon, Plus as AddIcon } from 'lucide-react';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
 import MainCard from '../components/common/MainCard';
+const PurchaseOrderItemsGrid = lazy(() => import('../tables/PurchaseOrderItemsGrid'));
 
 export default function PurchaseOrderDetail(){
   const { id } = useParams();
@@ -130,23 +131,9 @@ export default function PurchaseOrderDetail(){
         <Grid item xs={12} md={8}>
           <MainCard title="Kalemler" secondary={<Button startIcon={<AddIcon/>} size="small" onClick={()=>{ setItemEditing(null); setItemForm({ description:'', quantity:'1', unitPrice:'0'}); setItemDialogOpen(true); }}>Ekle</Button>} content={false}>
             <Box sx={{ height: 310 }}>
-              <DataGrid
-                rows={po.items || []}
-                columns={itemColumns}
-                getRowId={(r)=>r.id}
-                pageSizeOptions={[5]}
-                initialState={{ pagination:{ paginationModel:{ pageSize:5 }}}}
-                density="compact"
-                sx={(theme)=>({
-                  border: '1px solid',
-                  borderColor: theme.palette.divider,
-                  borderRadius: 2,
-                  '& .MuiDataGrid-columnHeaders': { fontWeight:600 },
-                  '& .MuiDataGrid-row:nth-of-type(even)': { backgroundColor: theme.palette.mode==='dark'? 'rgba(255,255,255,0.02)':'rgba(0,0,0,0.02)' },
-                  '& .MuiDataGrid-row.Mui-selected': { backgroundColor: theme.palette.action.selected, '&:hover': { backgroundColor: theme.palette.action.selected }},
-                  '& .MuiDataGrid-cell': { outline: 'none !important' }
-                })}
-              />
+              <Suspense fallback={<Stack alignItems="center" justifyContent="center" sx={{ height:'100%' }}><CircularProgress size={22} /></Stack>}>
+                <PurchaseOrderItemsGrid rows={po.items || []} columns={itemColumns} />
+              </Suspense>
             </Box>
           </MainCard>
         </Grid>

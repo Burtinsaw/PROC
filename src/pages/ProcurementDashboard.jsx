@@ -5,10 +5,13 @@ import ContentContainer from '../components/layout/ContentContainer';
 import ElevatedCard from '../components/ui/ElevatedCard';
 import { ShoppingCart, Clock, CheckCircle, Users, Package, MoreVertical, Plus, Filter, Download, ListTodo, ClipboardCheck, FileText, Sparkles, Search } from 'lucide-react';
 import { keyframes } from '@mui/system';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { lazy, Suspense } from 'react';
+const MonthlyTrendsChart = lazy(() => import('../components/charts/MonthlyTrendsChart'));
+const CategoryDistributionPie = lazy(() => import('../components/charts/CategoryDistributionPie'));
 import { useTheme } from '@mui/material/styles';
 import MetricCard from '../components/common/MetricCard';
 import StatusChip from '../components/common/StatusChip';
+import { useAuth } from '../contexts/useAuth';
 
 // Sample Data
 const dashboardStats = [
@@ -95,6 +98,7 @@ const recentRequests = [
 // Status color handled by StatusChip
 
 const ProcurementDashboard = () => {
+  const { user } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
   const [todos, setTodos] = useState([
     { id: 't1', title: 'Onay bekleyen talepler', hint: 'Talep listesi', link: '/talep/bekleyen', icon: Clock, done: false },
@@ -103,14 +107,24 @@ const ProcurementDashboard = () => {
     { id: 't4', title: 'Muhasebe bekleyen faturalar', hint: 'Finans', link: '/finance', icon: CheckCircle, done: false },
   ]);
   const theme = useTheme();
+  // Dinamik selamlama: saat başına güncellenir
+  const [clock, setClock] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setClock(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  const greeting = (() => {
+    const h = new Date(clock).getHours();
+    if (h >= 5 && h < 12) return 'Günaydın';
+    if (h >= 12 && h < 17) return 'İyi günler';
+    if (h >= 17 && h < 22) return 'İyi akşamlar';
+    return 'İyi geceler';
+  })();
   const primary = theme.palette.primary.main;
   const success = theme.palette.success.main;
   const warn = theme.palette.warning.main;
   const info = theme.palette.info.main;
   const error = theme.palette.error.main;
-  const neutralGrid = theme.palette.mode==='dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)';
-  const axisColor = theme.palette.text.secondary;
-  const soft = (c)=> theme.palette.mode==='dark'? `${c}33` : `${c}22`;
   categoryData = [
     { name: 'Elektronik', value: 35, color: primary },
     { name: 'Makine', value: 25, color: success },
@@ -222,7 +236,10 @@ const ProcurementDashboard = () => {
               Satın Alma Kontrol Paneli
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Hoş geldiniz! İşte bugünkü özet bilgileriniz.
+              {(() => {
+                const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.name || user?.username || '';
+                return `${greeting}${fullName ? `, ${fullName}` : ''}! İşte bugünkü özet bilgileriniz.`;
+              })()}
             </Typography>
           </Box>
           {/* Hızlı İşlemler - dashboard'a özel kompakt bar */}
@@ -273,23 +290,9 @@ const ProcurementDashboard = () => {
                 </IconButton>
               </Box>
               <Box sx={{ flexGrow: 1 }}>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={neutralGrid} />
-                  <XAxis dataKey="month" stroke={axisColor} fontSize={12} />
-                  <YAxis stroke={axisColor} fontSize={12} />
-                  <ReTooltip
-                    contentStyle={{
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${theme.palette.divider}`,
-                      borderRadius: '12px',
-                      boxShadow: theme.palette.mode==='dark'? '0 4px 18px -4px rgba(0,0,0,0.6)': '0 6px 20px -4px rgba(0,0,0,0.12)'
-                    }}
-                  />
-                  <Area isAnimationActive={!reduceMotion} type="monotone" dataKey="talepler" stroke={primary} fill={soft(primary)} strokeWidth={2.4} name="Toplam Talepler" />
-                  <Area isAnimationActive={!reduceMotion} type="monotone" dataKey="tamamlanan" stroke={success} fill={soft(success)} strokeWidth={2.4} name="Tamamlanan" />
-                </AreaChart>
-              </ResponsiveContainer>
+                <Suspense fallback={<Typography variant="body2" color="text.secondary">Grafik yükleniyor…</Typography>}>
+                  <MonthlyTrendsChart data={monthlyData} reduceMotion={reduceMotion} />
+                </Suspense>
               </Box>
       </ElevatedCard>
         </Grid>
@@ -301,25 +304,9 @@ const ProcurementDashboard = () => {
                 Kategori Dağılımı
               </Typography>
               <Box sx={{ flexGrow: 1, minHeight: 0 }}>
-              <ResponsiveContainer width="100%" height={220}>
-        <PieChart>
-                  <Pie
-                    data={categoryData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    innerRadius={40}
-          isAnimationActive={!reduceMotion}
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <ReTooltip />
-                </PieChart>
-              </ResponsiveContainer>
+                <Suspense fallback={<Typography variant="body2" color="text.secondary">Grafik yükleniyor…</Typography>}>
+                  <CategoryDistributionPie data={categoryData} reduceMotion={reduceMotion} height={220} />
+                </Suspense>
               </Box>
               <Box sx={{ mt: 2 }}>
                 {categoryData.map((item, index) => (

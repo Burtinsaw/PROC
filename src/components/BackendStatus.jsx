@@ -41,7 +41,9 @@ export default function BackendStatus({ compact = false, dbOnly = false }) {
   // Ultra-minimal: only a very small inline text like "DB: up/down"
   if (dbOnly) {
     const dbStatus = health?.db?.status || (error ? 'err' : '-');
-    const color = dbStatus === 'up' ? 'success.main' : (dbStatus === 'down' ? 'error.main' : 'text.secondary');
+    // İstek: Menüdeki "DB: up" yazısını göstermeyelim
+    if (dbStatus === 'up') return null;
+    const color = dbStatus === 'down' || dbStatus === 'err' ? 'error.main' : 'text.secondary';
     return (
       <Box aria-label={`Veritabanı durumu: ${dbStatus}`} sx={{ width: 1, display: 'flex', alignItems: 'center' }}>
         <Typography variant="caption" sx={{ fontSize: 10, color, lineHeight: 1 }}>

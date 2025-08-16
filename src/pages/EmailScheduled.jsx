@@ -72,12 +72,17 @@ export default function EmailScheduled(){
           {(items||[]).map(d => (
             <ListItem key={d.id} disablePadding secondaryAction={<span>{dayjs(d.updatedAt).format('DD.MM HH:mm')}</span>}>
               <ListItemButton onClick={()=> navigate(`/email/compose?id=${d.id}`)}>
-                <ListItemText primary={d.subject || '(Konu yok)'} secondary={(d.to || '').slice(0, 60)} />
+                <ListItemText
+                  primaryTypographyProps={{ component: 'div' }}
+                  secondaryTypographyProps={{ component: 'div' }}
+                  primary={d.subject || '(Konu yok)'}
+                  secondary={(d.to || '').slice(0, 60)}
+                />
               </ListItemButton>
             </ListItem>
           ))}
           {!loading && (!items || items.length === 0) && (
-            <ListItem><ListItemText primary="Planlanan e‑posta yok" /></ListItem>
+            <ListItem><ListItemText primaryTypographyProps={{ component: 'div' }} primary="Planlanan e‑posta yok" /></ListItem>
           )}
         </List>
       </Paper>
@@ -87,7 +92,7 @@ export default function EmailScheduled(){
           <Typography variant="subtitle1" gutterBottom>Yeniden Planla / İptal</Typography>
           <Grid container spacing={2}>
             {items.map(d => (
-              <Grid item xs={12} md={6} key={d.id}>
+              <Grid size={{ xs: 12, md: 6 }} key={d.id}>
                 <Stack direction="row" spacing={1} alignItems="center">
                   <Box flex={1}>
                     <Typography variant="body2" color="text.secondary">#{d.id} — {d.subject || '(Konu yok)'} </Typography>
@@ -101,9 +106,11 @@ export default function EmailScheduled(){
                       value={accountSel[d.id] || ''}
                       onChange={(e)=> onAccountChange(d.id, e.target.value)}
                     >
-                      {(accounts||[]).map(a => (
-                        <MenuItem key={a.id} value={a.id}>{a.emailAddress || a.username || `Hesap #${a.id}`}</MenuItem>
-                      ))}
+                      {(accounts||[])
+                        .filter(a => (a.emailAddress||'').toLowerCase() !== 'noreply@bninovasyon.com')
+                        .map(a => (
+                          <MenuItem key={a.id} value={a.id}>{a.emailAddress || a.username || `Hesap #${a.id}`}</MenuItem>
+                        ))}
                     </Select>
                   </FormControl>
                   <Button size="small" variant="outlined" onClick={()=> onSendNow(d.id)} disabled={busyId===d.id}>Şimdi Gönder</Button>

@@ -1,8 +1,9 @@
 import { Box, Grid, Typography, Stack, Button, List, ListItem, ListItemAvatar, ListItemText, Avatar, AvatarGroup } from '@mui/material';
 import MainCard from '../components/MainCard';
 import AnalyticEcommerce from '../components/AnalyticEcommerce';
-import UniqueVisitorCard from '../components/UniqueVisitorCard';
-import MonthlyBarChart from '../components/MonthlyBarChart';
+import { lazy, Suspense } from 'react';
+const UniqueVisitorCard = lazy(() => import('../components/UniqueVisitorCard'));
+const MonthlyBarChart = lazy(() => import('../components/MonthlyBarChart'));
 import { Gift, MessageSquare, Settings } from 'lucide-react';
 
 const MantisDashboard = () => {
@@ -60,7 +61,9 @@ const MantisDashboard = () => {
 
       {/* Unique Visitor Chart */}
       <Grid size={{ xs: 12, md: 7, lg: 8 }}>
-        <UniqueVisitorCard />
+        <Suspense fallback={null}>
+          <UniqueVisitorCard />
+        </Suspense>
       </Grid>
 
       {/* Income Overview */}
@@ -92,7 +95,9 @@ const MantisDashboard = () => {
               </Typography>
             </Stack>
           </Box>
-          <MonthlyBarChart />
+          <Suspense fallback={null}>
+            <MonthlyBarChart />
+          </Suspense>
         </MainCard>
       </Grid>
 

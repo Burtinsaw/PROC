@@ -1,6 +1,6 @@
 import axios from '../utils/axios';
 
-export async function listInbox({ limit = 50, offset = 0, q, companies, folder, flagged, unread } = {}){
+export async function listInbox({ limit = 50, offset = 0, q, companies, folder, flagged, unread } = {}, config = {}){
   const params = {};
   if(limit) params.limit = limit;
   if(offset) params.offset = offset;
@@ -9,7 +9,7 @@ export async function listInbox({ limit = 50, offset = 0, q, companies, folder, 
   if(folder) params.folder = folder;
   if(typeof flagged === 'boolean') params.flagged = flagged;
   if(typeof unread === 'boolean') params.unread = unread;
-  const { data } = await axios.get('/email/inbox', { params });
+  const { data } = await axios.get('/email/inbox', { params, ...(config||{}) });
   return data;
 }
 
@@ -150,8 +150,8 @@ export async function patchDraft(id, updates){
   const { data } = await axios.post(`/email/drafts/${id}/patch`, updates);
   return data;
 }
-export async function sendNow({ draftId, to, cc, bcc, subject, bodyHtml, bodyText, attachments, accountId }){
-  const { data } = await axios.post('/email/send', { draftId, to, cc, bcc, subject, bodyHtml, bodyText, attachments, accountId });
+export async function sendNow({ draftId, to, cc, bcc, subject, bodyHtml, bodyText, attachments, accountId, link }){
+  const { data } = await axios.post('/email/send', { draftId, to, cc, bcc, subject, bodyHtml, bodyText, attachments, accountId, link });
   return data;
 }
 export async function scheduleSend({ draftId, scheduledAt }){
@@ -161,4 +161,85 @@ export async function scheduleSend({ draftId, scheduledAt }){
 export async function cancelSchedule(id){
   const { data } = await axios.post(`/email/schedule/${id}/cancel`);
   return data;
+}
+
+// Signatures API
+export async function listSignatures(params){
+  const { data } = await axios.get('/email/signatures', { params });
+  return data;
+}
+// Contacts (adres defteri)
+export async function suggestContacts(q){
+  const { data } = await axios.get(`/contacts/suggest?q=${encodeURIComponent(q||'')}`);
+  return data?.items || [];
+}
+export async function importContactsCsv(file){
+  const form = new FormData(); form.append('file', file);
+  const { data } = await axios.post('/contacts/import', form, { headers: { 'Content-Type':'multipart/form-data' } });
+  return data;
+}
+export async function harvestContacts(accountIds){
+  const { data } = await axios.post(`/contacts/harvest`, { accountIds }, { headers: { 'X-Suppress-Error-Toast': '1' }, _suppressErrorToast: true });
+  return data;
+}
+export async function createSignature(payload){
+  const { data } = await axios.post('/email/signatures', payload);
+  return data;
+}
+export async function updateSignature(id, payload){
+  const { data } = await axios.put(`/email/signatures/${id}`, payload);
+  return data;
+}
+export async function deleteSignature(id){
+  const { data } = await axios.delete(`/email/signatures/${id}`);
+  return data;
+}
+export async function uploadSignatureFile(file){
+  const form = new FormData();
+  form.append('file', file);
+  const { data } = await axios.post('/email/signatures/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  return data;
+}
+
+// Auto-Reply API
+export async function getAutoReply(){
+  const { data } = await axios.get('/email/auto-reply');
+  return data?.item || { enabled:false };
+}
+export async function updateAutoReply(payload){
+  const { data } = await axios.put('/email/auto-reply', payload);
+  return data?.item || null;
+}
+export async function listAutoReplyLogs({ cursor, sender, limit = 50 } = {}){
+  const params = {};
+  if (cursor) params.cursor = cursor;
+  if (sender) params.sender = sender;
+  if (limit) params.limit = limit;
+  const { data } = await axios.get('/email/auto-reply/logs', { params });
+  return {
+    items: data?.items || [],
+    nextCursor: data?.nextCursor || null
+  };
+}
+
+// Templates API
+export async function listTemplates(){
+  const { data } = await axios.get('/email/templates');
+  return data?.items || [];
+}
+export async function getTemplate(id){
+  const { data } = await axios.get(`/email/templates/${id}`);
+  return data?.item || null;
+}
+export async function createTemplate(payload){
+  const { data } = await axios.post('/email/templates', payload);
+  return data?.item || null;
+}
+export async function updateTemplate(id, payload){
+  const { data } = await axios.put(`/email/templates/${id}`, payload);
+  return data?.item || null;
+}
+export async function deleteTemplate(id){
+  const { data } = await axios.delete(`/email/templates/${id}`);
+  return data?.success;
 }

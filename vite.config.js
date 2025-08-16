@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -9,8 +10,9 @@ export default defineConfig(({ mode }) => {
     process.env.VITE_BACKEND_PORT || env.VITE_BACKEND_PORT ||
     '5002'
 
+  const analyze = process.env.ANALYZE === '1' || env.ANALYZE === '1'
   return {
-    plugins: [react()],
+    plugins: [react(), ...(analyze ? [visualizer({ filename: 'dist/stats.html', template: 'treemap', gzipSize: true, brotliSize: true })] : [])],
     build: {
       chunkSizeWarningLimit: 1200,
       rollupOptions: {

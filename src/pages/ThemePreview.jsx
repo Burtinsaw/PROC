@@ -105,12 +105,12 @@ export default function ThemePreview(){
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>Tema Önizleme</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Her kutu, ilgili preset ile stillenmiştir. Beğendiğinizi Uygula ile aktif edebilirsiniz.</Typography>
-      <Grid container spacing={2}>
+  <Grid container spacing={2}>
         {PRESETS.map((p)=>{
           const theme = makeTheme(mode, p);
           const title = p.charAt(0).toUpperCase() + p.slice(1);
           return (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={p}>
+    <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={p}>
               <ThemeProvider theme={theme}>
                 <CssBaseline />
                 <Card>

@@ -28,6 +28,13 @@ export default class ErrorBoundary extends React.Component {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               Beklenmeyen bir hata ile karşılaşıldı. Sayfayı yenilemeyi deneyin.
             </Typography>
+            {import.meta.env?.DEV && this.state.error && (
+              <Box sx={{ mb: 2, p: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
+                <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
+                  {String(this.state.error?.stack || this.state.error?.message || this.state.error)}
+                </Typography>
+              </Box>
+            )}
             <Button variant="contained" onClick={this.handleReload}>Sayfayı Yenile</Button>
           </Paper>
         </Box>

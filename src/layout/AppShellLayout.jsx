@@ -5,6 +5,7 @@ import AccordionSidebar, { ACC_SIDEBAR_WIDTH } from '../components/nav/Accordion
 import NavRail, { RAIL_WIDTH, RAIL_COLLAPSED_WIDTH } from '../components/nav/NavRail';
 import NavContextPanel from '../components/nav/NavContextPanel';
 import NavBottomBar from '../components/nav/NavBottomBar';
+import RouteProgress from '../components/common/RouteProgress';
 import AppShellHeader from '../components/nav/AppShellHeader';
 import CommandPalette from '../components/nav/CommandPalette';
 import BottomStatusBar from '../components/nav/BottomStatusBar';
@@ -23,6 +24,15 @@ export default function AppShellLayout() {
   const isMobile = useMediaQuery('(max-width:900px)');
   const location = useLocation();
   const prevCollapsedRef = useRef(null);
+
+  // Route değişiminde scroll reset (ana içerik)
+  useEffect(() => {
+    try {
+      const main = document.getElementById('app-main');
+      if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch { /* ignore */ }
+  }, [location.pathname]);
 
   // E-posta rotalarında otomatik olarak menüyü rail (ikon) moduna indir
   useEffect(() => {
@@ -105,13 +115,16 @@ export default function AppShellLayout() {
   {!isMobile && !menuCollapsed && (
     <AccordionSidebar leftOffset={0} topOffset={56} onCollapse={()=> setMenuCollapsed(true)} />
   )}
-        <Box id="app-main" component="main" role="main" tabIndex={-1} sx={(theme)=>({
+  <Box id="app-main" component="main" role="main" tabIndex={-1} className="hide-scrollbar" sx={(theme)=>({
           flex:1,
           // leave room for rail and accordion sidebar; header alignment handled by header itself
       ml: isMobile? 0 : (menuCollapsed ? `${RAIL_COLLAPSED_WIDTH}px` : `${ACC_SIDEBAR_WIDTH}px`),
           pb: isMobile? '72px': 4,
           pl: { xs:2, sm:3, md:4 }, pr: { xs:2, sm:3, md:4 }, pt: { xs:2, md:3 },
-          transition:'margin .3s',
+          transition:'margin var(--motion-duration-base) var(--motion-ease-standard)',
+          overflowX: 'hidden',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
           background: theme.preset==='aurora'
             ? (theme.palette.mode==='dark'
                 ? 'linear-gradient(135deg,#0f172a 0%, #1e293b 60%)'
@@ -119,6 +132,8 @@ export default function AppShellLayout() {
             : theme.palette.background.default,
         })}>
           <AppShellHeader />
+          {/* RouteProgress burada Data Router context'i içindedir */}
+          <RouteProgress />
           <CommandPalette open={cmdOpen} onClose={()=> setCmdOpen(false)} />
           <Outlet />
         </Box>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Button, Chip, CircularProgress, Grid, Paper, Stack, Tab, Tabs, Typography, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, Switch, FormControlLabel, Slider } from '@mui/material';
+import { Box, Button, Chip, CircularProgress, Grid, Paper, Stack, Tab, Tabs, Typography, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, Switch, FormControlLabel, Slider, Avatar } from '@mui/material';
 import StatusChip from '../components/common/StatusChip';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
@@ -12,6 +12,18 @@ export default function RFQDetail() {
 	const [rfq, setRfq] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [tab, setTab] = useState(0);
+	const [emails, setEmails] = useState({ items: [], total: 0 });
+	const [emailsLoading, setEmailsLoading] = useState(false);
+
+	const loadEmails = useCallback(async () => {
+		try {
+			setEmailsLoading(true);
+			const { data } = await axios.get(`/rfqs/${id}/emails`);
+			setEmails({ items: data?.items || [], total: data?.total || 0 });
+		} catch (e) {
+			toast.error('E-postalar yüklenemedi');
+		} finally { setEmailsLoading(false); }
+	}, [id]);
 	const [cmp, setCmp] = useState(null);
 	const [cmpLoading, setCmpLoading] = useState(false);
 	const [showScores, setShowScores] = useState(true);
@@ -137,6 +149,7 @@ export default function RFQDetail() {
 						try { setCmpLoading(true); const { data } = await axios.get(`/rfqs/${id}/comparison`); setCmp(data); } catch { toast.error('Karşılaştırma getirilemedi'); } finally { setCmpLoading(false); }
 					}} />
 					<Tab label="Geçmiş" />
+					<Tab label={`E-postalar${emails.total?` (${emails.total})`:''}`} onClick={() => { if (!emails.items.length) loadEmails(); }} />
 				</Tabs>
 				{tab === 0 && (
 					<Box sx={{ p: 2 }}>
@@ -292,6 +305,44 @@ export default function RFQDetail() {
 					</Box>
 				)}
 				{tab === 2 && <AuditHistory rfqId={id} />}
+				{tab === 3 && (
+					<Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+						<Stack direction="row" justifyContent="flex-end" sx={{ mb: 1 }}>
+							<Button size="small" variant="outlined" onClick={() => {
+								const params = new URLSearchParams();
+								params.set('entityType', 'rfq');
+								params.set('entityId', String(id));
+								if (rfq?.rfqNumber) params.set('entityKey', rfq.rfqNumber);
+								navigate(`/email/compose?${params.toString()}`);
+							}}>E‑posta Yaz</Button>
+						</Stack>
+						{emailsLoading && <CircularProgress size={20} />}
+						{!emailsLoading && emails.items.length === 0 && <Typography color="text.secondary" variant="body2">Bu RFQ ile ilişkilendirilmiş e-posta yok.</Typography>}
+						{!emailsLoading && emails.items.length > 0 && (
+							<Stack gap={1}>
+								{emails.items.map((l) => {
+									const m = l.email || {};
+									return (
+										<Paper key={l.id} variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
+											<Stack direction="row" gap={1.25} alignItems="flex-start">
+												<Avatar sx={{ width: 28, height: 28 }}>{(m.from||'?').slice(0,1).toUpperCase()}</Avatar>
+												<Box sx={{ flex: 1, minWidth: 0 }}>
+													<Stack direction="row" justifyContent="space-between" alignItems="center">
+														<Typography fontWeight={600} noWrap>{m.subject || '(No Subject)'}</Typography>
+														<Typography variant="caption" color="text.secondary">{m.date ? new Date(m.date).toLocaleString('tr-TR') : '-'}</Typography>
+													</Stack>
+													<Typography variant="caption" color="text.secondary" noWrap>{m.from}</Typography>
+													<Typography variant="body2" sx={{ mt: .5 }} noWrap>{m.snippet || m.bodyText || ''}</Typography>
+												</Box>
+												<Chip size="small" label={l.linkSource || 'manual'} />
+											</Stack>
+										</Paper>
+									);
+								})}
+							</Stack>
+						)}
+					</Box>
+				)}
 			</MainCard>
 		</Box>
 	);
