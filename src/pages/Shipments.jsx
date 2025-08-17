@@ -21,6 +21,7 @@ export default function Shipments() {
   const [onlyOpen, setOnlyOpen] = useState(searchParams.get('open') === '1');
   const INCOTERMS = useMemo(()=>['EXW','FCA','FOB','CFR','CIF','CPT','CIP','DAP','DDP'],[]);
   const openCount = useMemo(()=> rows.reduce((acc,r)=> acc + (Number(r.openExceptions||0) > 0 ? 1 : 0), 0), [rows]);
+  const filterCount = useMemo(()=> (q?1:0) + (incotermFilter?1:0) + (onlyOpen?1:0), [q, incotermFilter, onlyOpen]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -78,6 +79,7 @@ export default function Shipments() {
   }, [rows, incotermFilter, onlyOpen, q]);
 
   const exportCsv = () => {
+    const sanitize = (s) => String(s||'').toLowerCase().replace(/[^a-z0-9_-]+/g,'-').replace(/^-+|-+$/g,'');
     // CSV'ye uygun kolonlar
     const csvColumns = [
       { field:'trackingNo', headerName:'Takip No' },
@@ -89,7 +91,13 @@ export default function Shipments() {
       { field:'createdAt', headerName:'Oluşturma' },
     ];
     const source = selected.length ? filtered.filter(r => selected.includes(r.id)) : filtered;
-    exportRowsToCsv({ filename: selected.length ? `shipments_selected_${selected.length}.csv` : 'shipments.csv', rows: source, columns: csvColumns });
+    const parts = [];
+    if (onlyOpen) parts.push('open');
+    if (incotermFilter) parts.push(`incoterm-${sanitize(incotermFilter)}`);
+    if (q) parts.push(`q-${sanitize(q)}`);
+    const suffix = parts.length ? `_${parts.join('_')}` : '';
+    const base = selected.length ? `shipments_selected_${selected.length}` : 'shipments';
+    exportRowsToCsv({ filename: `${base}${suffix}.csv`, rows: source, columns: csvColumns });
   };
 
   return (
@@ -103,7 +111,7 @@ export default function Shipments() {
             {INCOTERMS.map(i => <MenuItem key={i} value={i}>{i}</MenuItem>)}
           </Select>
       <FormControlLabel sx={{ ml: 1 }} control={<Switch size="small" checked={onlyOpen} onChange={(e)=> setOnlyOpen(e.target.checked)} />} label={`Sadece açık istisna (${openCount})`} />
-    <Button onClick={()=>{ setQueryDraft(''); setQ(''); setIncotermFilter(''); setOnlyOpen(false); setSearchParams({}, { replace:true }); }} variant="text">Filtreleri temizle</Button>
+  <Button onClick={()=>{ setQueryDraft(''); setQ(''); setIncotermFilter(''); setOnlyOpen(false); setSearchParams({}, { replace:true }); }} variant="text">{`Filtreleri temizle${filterCount ? ` (${filterCount})` : ''}`}</Button>
       <Button onClick={exportCsv} variant="outlined">CSV</Button>
           <Button onClick={load} variant="outlined">Yenile</Button>
         </Stack>
