@@ -9,7 +9,10 @@ export default function ShipmentsGrid({ rows, columns, selectedIds = [], onSelec
       rows={rows}
       columns={columns}
       pageSizeOptions={[10, 25]}
-      initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+      initialState={{
+        pagination: { paginationModel: { pageSize: 10 } },
+        sorting: { sortModel: [{ field: 'openExceptions', sort: 'desc' }] }
+      }}
       density="compact"
   checkboxSelection
   disableRowSelectionOnClick
