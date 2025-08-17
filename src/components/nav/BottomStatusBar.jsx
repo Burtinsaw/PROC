@@ -21,9 +21,9 @@ export default function BottomStatusBar({ leftOffset = 0 }) {
         alignItems: 'center',
         px: 0.75,
         gap: 0.75,
-        borderTop: '1px solid',
-        borderColor: 'divider',
-        bgcolor: 'background.paper',
+  borderTop: '1px solid',
+  borderColor: 'divider',
+  bgcolor: 'background.default',
         zIndex: 1100
       }}
     >
@@ -37,7 +37,7 @@ export default function BottomStatusBar({ leftOffset = 0 }) {
             display: { xs: 'none', sm: 'inline-flex' },
             width: 6, height: 6, borderRadius: '50%',
             bgcolor: color,
-            boxShadow: `0 0 0 2px ${t.palette.background.paper}, 0 0 6px 1px ${color}66`,
+            boxShadow: `0 0 0 2px ${t.palette.background.default}, 0 0 6px 1px ${color}66`,
           };
         }} />
       </Tooltip>

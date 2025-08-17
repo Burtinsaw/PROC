@@ -115,7 +115,7 @@ export default function AppShellLayout() {
   {!isMobile && !menuCollapsed && (
     <AccordionSidebar leftOffset={0} topOffset={56} onCollapse={()=> setMenuCollapsed(true)} />
   )}
-  <Box id="app-main" component="main" role="main" tabIndex={-1} className="hide-scrollbar" sx={(theme)=>({
+  <Box id="app-main" component="main" role="main" tabIndex={-1} className="hide-scrollbar" sx={{
           flex:1,
           // leave room for rail and accordion sidebar; header alignment handled by header itself
       ml: isMobile? 0 : (menuCollapsed ? `${RAIL_COLLAPSED_WIDTH}px` : `${ACC_SIDEBAR_WIDTH}px`),
@@ -125,12 +125,9 @@ export default function AppShellLayout() {
           overflowX: 'hidden',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
-          background: theme.preset==='aurora'
-            ? (theme.palette.mode==='dark'
-                ? 'linear-gradient(135deg,#0f172a 0%, #1e293b 60%)'
-                : 'linear-gradient(135deg,#f0f7ff 0%, #ffffff 60%)')
-            : theme.palette.background.default,
-        })}>
+          // Background is applied globally on body via CssBaseline to ensure continuous overscroll visuals
+          background: 'transparent',
+        }}>
           <AppShellHeader />
           {/* RouteProgress burada Data Router context'i içindedir */}
           <RouteProgress />

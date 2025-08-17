@@ -223,7 +223,7 @@ export default function AppShellHeader() {
             ? (theme.palette.mode==='dark'
                 ? 'linear-gradient(90deg, rgba(17,24,39,0.85), rgba(17,24,39,0.65))'
                 : 'linear-gradient(90deg, rgba(255,255,255,0.85), rgba(255,255,255,0.6))')
-            : theme.palette.background.paper,
+            : theme.palette.background.default,
           backdropFilter: theme.preset==='aurora'? 'blur(18px)' : undefined
         }
       )}

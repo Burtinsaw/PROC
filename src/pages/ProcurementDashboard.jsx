@@ -198,35 +198,7 @@ const ProcurementDashboard = () => {
   return (
     <ContentContainer
       disableGutters
-      sx={{
-        position: 'relative',
-        overflow: 'hidden',
-        minHeight: 'calc(100vh - 64px)',
-        gap: 4,
-  ...(dashboardBg && !applyGlobal
-          ? {
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                inset: 0,
-                backgroundImage: `url(${dashboardBg})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                filter: `blur(${bgBlur}px)`,
-                transform: 'scale(1.05)'
-              },
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                inset: 0,
-                background: `rgba(0,0,0,${bgDim/100})`
-              },
-              borderRadius: 2,
-              p: { xs: 1, sm: 2 }
-            }
-          : {})
-      }}
+  sx={{ position: 'relative', minHeight: 'calc(100vh - 64px)', gap: 4 }}
     >
       {/* Header Section */}
   <Box sx={{ width: '100%' }}>

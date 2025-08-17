@@ -467,15 +467,18 @@ export const ThemeProvider = ({ children }) => {
           transition: 'box-shadow .15s ease'
         }),
   body: ({ theme }) => {
-          const bg = {};
+          // Always set a base background from theme for all presets
+          const bg = { background: theme.palette.background.default };
           if (preset === 'aurora') {
+            const base = theme.palette.background.default;
             bg.background = theme.palette.mode==='dark'
-              ? 'radial-gradient(circle at 25% 15%, rgba(56,189,248,0.08), transparent 60%), radial-gradient(circle at 85% 65%, rgba(168,85,247,0.08), transparent 55%), #0f172a'
-              : 'radial-gradient(circle at 30% 20%, rgba(99,102,241,0.12), transparent 60%), radial-gradient(circle at 80% 70%, rgba(14,165,233,0.12), transparent 55%), #f1f5f9';
+              ? `radial-gradient(circle at 25% 15%, rgba(56,189,248,0.08), transparent 60%), radial-gradient(circle at 85% 65%, rgba(168,85,247,0.08), transparent 55%), ${base}`
+              : `radial-gradient(circle at 30% 20%, rgba(99,102,241,0.12), transparent 60%), radial-gradient(circle at 80% 70%, rgba(14,165,233,0.12), transparent 55%), ${base}`;
           } else if (preset === 'neo') {
+            const base = theme.palette.background.default;
             bg.background = theme.palette.mode==='dark'
-              ? 'radial-gradient(1000px 400px at 20% -10%, rgba(59,130,246,0.08), transparent 40%), #0b1220'
-              : 'radial-gradient(1000px 400px at 80% 110%, rgba(59,130,246,0.12), transparent 40%), #eef2ff';
+              ? `radial-gradient(1000px 400px at 20% -10%, rgba(59,130,246,0.08), transparent 40%), ${base}`
+              : `radial-gradient(1000px 400px at 80% 110%, rgba(59,130,246,0.12), transparent 40%), ${base}`;
           } else if (preset === 'minimal') {
             bg.background = theme.palette.mode==='dark' ? '#0b1220' : '#fafafa';
           }
@@ -485,14 +488,16 @@ export const ThemeProvider = ({ children }) => {
             '&::before': {
               content: '""',
               position: 'fixed',
-              inset: 0,
-              zIndex: -1,
+              // Blur edilen arkaplanın kenar artefaktlarını önlemek için viewport dışına taşır
+              inset: -40,
+              zIndex: -2,
               backgroundImage: 'var(--app-bg-image)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
               filter: 'blur(var(--app-bg-blur))',
-              transform: 'scale(1.05)'
+              // transform: 'scale(1.05)' kaldırıldı; inset ile çözülüyor
+              willChange: 'filter'
             },
             '&::after': {
               content: '""',
@@ -669,7 +674,7 @@ function GlobalBackgroundApplier(){
   if (!apply || !bg) return null;
   return (
     <style>
-      {`body::before{content:"";position:fixed;inset:0;z-index:-2;background-image:url(${bg});background-size:cover;background-position:center;background-repeat:no-repeat;filter:blur(${blur}px);transform:scale(1.05);} body::after{content:"";position:fixed;inset:0;z-index:-1;background:rgba(0,0,0,${dim/100});}`}
+  {`body::before{content:"";position:fixed;inset:-40px;z-index:-2;background-image:url(${bg});background-size:cover;background-position:center;background-repeat:no-repeat;filter:blur(${blur}px);} body::after{content:"";position:fixed;inset:0;z-index:-1;background:rgba(0,0,0,${dim/100});}`}
     </style>
   );
 }
