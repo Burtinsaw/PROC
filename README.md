@@ -17,6 +17,7 @@ Modern ve güvenli satın alma yönetim sistemi. Yeni nesil Aurora temalı aray�
 - **Real-time**: WebSocket desteği ile anlık güncellemeler
  - **Ön-Commit Kalite**: Husky + lint-staged (eslint --fix + ilgili testler)
  - **Fuzzy Arama**: Komut Paleti özel fuzzy skor algoritması (exact > prefix > substring > sıralı)
+ - **Lojistik (Sevkiyat) Modülü**: Shipments listesi ve detay sayfası (bacaklar, olaylar zaman çizelgesi, masraflar, istisnalar, notlar), Incoterm filtreleme, CSV dışa aktarım
 
 ## 🛠️ Teknoloji Stack'i
 
@@ -37,6 +38,13 @@ Modern ve güvenli satın alma yönetim sistemi. Yeni nesil Aurora temalı aray�
 - **bcrypt** - Şifre hash'leme
 - **Nodemailer** - E-posta gönderimi
 - **Multer** - Dosya yükleme
+
+### Logistics / Shipments (Özet)
+- REST API: `/api/shipments` (liste/detay/oluşturma/status/track) ve nested: `/:shipmentId/(legs|events|charges|exceptions)`
+- Ek uç nokta: `PATCH /api/shipments/:id/notes` — sevkiyat notları
+- Alan eşlemeleri: `code = shipmentNumber`, `trackingNo = trackingNumber`
+- Ön yüz: Shipments listesi (arama, incoterm, URL senk), seçim + CSV export; Shipment Detail (quick-add formlar, timeline, inline düzenleme, resolved toggle)
+- Detaylar için: `docs/API-SHIPMENTS.md`
 
 ## 📦 Kurulum
 
@@ -77,7 +85,7 @@ YANDEX_APP_PASSWORD=your-app-password
 
 ### Frontend (.env)
 ```env
-VITE_APP_API_URL=http://localhost:5000/api
+VITE_APP_API_URL=http://localhost:5002/api
 VITE_APP_BASE_URL=http://localhost:3000
 NODE_ENV=development
 ```
@@ -99,6 +107,15 @@ NODE_ENV=development
 - `GET /api/companies` - Şirket listesi
 - `POST /api/companies` - Yeni şirket
 - `GET /api/companies/:id/bank-accounts` - Banka hesapları
+
+### Lojistik / Shipments
+- `GET /api/shipments` — Liste
+- `GET /api/shipments/:id` — Detay
+- `POST /api/shipments` — Oluştur
+- `PATCH /api/shipments/:id/status` — Durum
+- `PATCH /api/shipments/:id/notes` — Notlar
+- Nested: `/:shipmentId/legs|events|charges|exceptions` (GET/POST), `PATCH /exceptions/:id`, `PATCH /legs/:id`
+Detaylı şema ve örnekler için `docs/API-SHIPMENTS.md`.
 
 ## 🔒 Güvenlik Özellikleri
 
@@ -136,8 +153,8 @@ cd satinalma-backend
 npm test
 
 # Frontend testleri  
-cd procurement_mantis_original
-npm test
+cd satinalma
+npm run test:ci
 ```
 
 ## 📊 Monitoring & Gözlem
