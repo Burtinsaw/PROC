@@ -12,12 +12,11 @@ Güncellendi: 2025-08-17
 - Lojistik modülü:
   - Modeller: Shipment, ShipmentItem; alt modeller: ShipmentLeg, TrackingEvent, ShipmentCharge, ShipmentException ilişkilendirildi.
   - Rotalar: POST /shipments, GET /shipments, GET /shipments/:id, PATCH /shipments/:id/status, GET /shipments/track/:trackingNumber.
-  - Nested rotalar: /:shipmentId/(legs|events|charges|exceptions) [GET/POST], ayrıca PATCH legs ve exceptions.
-  - Yeni: PATCH /shipments/:id/notes (sevkiyat notları).
+  - Nested rotalar: /:shipmentId/(legs|events|charges|exceptions|notes) — legs/events/charges/exceptions [GET/POST], PATCH legs ve exceptions; notes [GET/POST/DELETE].
   - Response normalizasyonu: trackingNo (trackingNumber), code (shipmentNumber).
 - Frontend
   - Shipments listesi: hızlı arama (300ms debounce), Incoterm filtresi, URL senkronizasyonu (?q, ?incoterm), seçim ve sadece seçili satırları CSV dışa aktarım, GridToolbar, “Filtreleri temizle”.
-  - Shipment Detail: özet chip’ler, bacak/olay/masraf/istisna listeleri, tümü için hızlı-ekle formları, olay zaman çizelgesi, istisna inline düzenleme, “Çözüldü/Açık” toggle (resolvedAt), Notlar alanı (PATCH /notes ile kaydetme).
+  - Shipment Detail: özet chip’ler, bacak/olay/masraf/istisna listeleri, tümü için hızlı-ekle formları, olay zaman çizelgesi, istisna inline düzenleme, “Çözüldü/Açık” toggle (resolvedAt), Notlar listesi (GET/POST), rol-korumalı silme (DELETE).
   - Alan hizalama: events.eventTime, exceptions.code; event formundaki lokasyon geçici olarak description’da tutuluyor.
 - Test & CI
   - Frontend: CSV yardımcıları için birim testleri; tüm testler yeşil.
@@ -38,7 +37,7 @@ Güncellendi: 2025-08-17
 ## Lojistik (Sevkiyat) Modülü Durumu
 - Backend
   - Rotalar aktif (feature flag: MODULE_LOGISTICS).
-  - Modeller ve ilişkiler hazır; status/track/notes uçları mevcut.
+  - Modeller ve ilişkiler hazır; status/track uçları ve çoklu notlar (GET/POST/DELETE) mevcut.
 - Frontend
   - Shipments listesi ve detay sayfası üretken kullanımda.
 

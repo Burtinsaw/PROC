@@ -41,7 +41,7 @@ Modern ve güvenli satın alma yönetim sistemi. Yeni nesil Aurora temalı aray�
 
 ### Logistics / Shipments (Özet)
 - REST API: `/api/shipments` (liste/detay/oluşturma/status/track) ve nested: `/:shipmentId/(legs|events|charges|exceptions)`
-- Ek uç nokta: `PATCH /api/shipments/:id/notes` — sevkiyat notları
+- Ek uç nokta: `/:shipmentId/notes` — sevkiyat notları (GET/POST/DELETE)
 - Alan eşlemeleri: `code = shipmentNumber`, `trackingNo = trackingNumber`
 - Ön yüz: Shipments listesi (arama, incoterm, URL senk), seçim + CSV export; Shipment Detail (quick-add formlar, timeline, inline düzenleme, resolved toggle)
 - Detaylar için: `docs/API-SHIPMENTS.md`
@@ -113,7 +113,7 @@ NODE_ENV=development
 - `GET /api/shipments/:id` — Detay
 - `POST /api/shipments` — Oluştur
 - `PATCH /api/shipments/:id/status` — Durum
-- `PATCH /api/shipments/:id/notes` — Notlar
+- `GET|POST|DELETE /api/shipments/:id/notes` — Notlar (listele/ekle/sil)
 - Nested: `/:shipmentId/legs|events|charges|exceptions` (GET/POST), `PATCH /exceptions/:id`, `PATCH /legs/:id`
 Detaylı şema ve örnekler için `docs/API-SHIPMENTS.md`.
 

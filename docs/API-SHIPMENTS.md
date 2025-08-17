@@ -4,7 +4,7 @@ Bu doküman, Logistics/Shipments uç noktalarının kısa sözleşmesini özetle
 
 ## Modeller (özet)
 - Shipment
-  - id, shipmentNumber (code), purchaseOrderId, carrier, trackingNumber (trackingNo), status, eta, incoterm, notes,
+  - id, shipmentNumber (code), purchaseOrderId, carrier, trackingNumber (trackingNo), status, eta, incoterm,
     primaryMode (road/sea/air/rail/roro), vesselName, voyageNo, flightNo, truckPlate, trailerPlate,
     driverName, driverPhone, containerNumbersJson (array), totalGrossWeightKg, totalNetWeightKg, totalVolumeM3,
     totalPackages, transportInfo(json), sourcePackingList(json), consigneePackingList(json), createdAt, updatedAt
@@ -128,6 +128,19 @@ Tüm uç noktalar Auth gerektirir ve `:shipmentId` geçerli bir sevkiyat olmalı
   Body (parçalı): `{ severity?, message?, occurredAt?, resolvedAt? }`
   Not: UI’da resolvedAt toggle ile set/sil yapılır.
 
+5) Notes (Notlar)
+
+- GET /api/shipments/:shipmentId/notes → `[{ id, text, createdById, createdByName, createdAt }]`
+- POST /api/shipments/:shipmentId/notes
+  Body örnek:
+  ```json
+  { "text": "Kontrol edildi, evraklar hazır." }
+  ```
+  Response 201: `{ id, shipmentId, text, createdById, createdByName, createdAt }`
+- DELETE /api/shipments/:shipmentId/notes/:noteId
+  RBAC: Yalnızca `admin` veya satınalma müdürü rollerindeki kullanıcılar silebilir.
+  Response 200: `{ ok: true }`
+
 ### PATCH /api/shipments/:id/status
 Durum güncelleme.
 - Auth: required
@@ -138,12 +151,6 @@ Durum güncelleme.
 Takip numarasına göre bul.
 - Auth: required (opsiyonel yapılabilir)
 - Response 200: `{ id, code, trackingNo, status, carrier, eta }`
-
-### PATCH /api/shipments/:id/notes
-Sevkiyat notlarını günceller (serbest metin).
-- Auth: required
-- Body: `{ "notes": "..." }` (null gönderilirse temizler)
-- Response 200: `{ ok: true, notes }`
 
 ### PATCH /api/shipments/:shipmentId/legs/:id
 Sevkiyat bacağı günceller (minimal parça güncelleme; ör. status/eta).
@@ -156,3 +163,6 @@ Sevkiyat bacağı günceller (minimal parça güncelleme; ör. status/eta).
 - Nested varlıklar için alanlar minimal tutulmuştur; ilerleyen sürümlerde `carrierId`, `locationId`, `taxCode` vb. eklenecektir.
 - PO/PO Item ilişkileri doğrulanmalı; quantity > 0 ve kalan miktar kuralları (ileriki sürümde zenginleşecek).
 - Hata biçimi: `{ success:false, message:"..." }` (mevcut backend standardına uyumlu).
+
+## Eskimiş (Deprecated)
+- Tek alanlı `PATCH /api/shipments/:id/notes` uç noktası kaldırılmıştır. Yerine çoklu notlar alt kaynağını (`GET/POST/DELETE /api/shipments/:id/notes`) kullanın.
