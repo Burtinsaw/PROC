@@ -217,8 +217,9 @@ export default function AppShellHeader() {
         {
           position:'sticky', top:0, zIndex: 1010,
           display:'flex', alignItems:'center', justifyContent:'space-between',
-          minHeight: HEADER_MIN_H,
+          height: HEADER_MIN_H,
           px:{ xs:2, sm:2.5, md:3 }, py: 1, mb:2,
+          overflow: 'hidden',
           borderBottom:'1px solid', borderColor: theme.palette.divider,
           background: theme.preset==='aurora'
             ? (theme.palette.mode==='dark'

@@ -118,7 +118,7 @@ export default function AppShellLayout() {
     </>
   )}
   {!isMobile && !menuCollapsed && (
-    <AccordionSidebar leftOffset={0} topOffset={56} onCollapse={()=> setMenuCollapsed(true)} />
+  <AccordionSidebar leftOffset={0} onCollapse={()=> setMenuCollapsed(true)} />
   )}
   <Box id="app-main" component="main" role="main" tabIndex={-1} className="hide-scrollbar" sx={{
           flex:1,
