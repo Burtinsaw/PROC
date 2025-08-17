@@ -73,8 +73,12 @@ Yeni sevkiyat oluşturur.
 ### GET /api/shipments
 Sevkiyatları listeler (sayfalama ve filtreler ileride).
 - Auth: required
-- Query (opsiyonel): `status`, `po`, `q`
-- Response 200: `[{ id, code, trackingNo, status, carrier, eta, ... }]`
+- Query (opsiyonel):
+  - `status`, `po` (mevcut taslaktan)
+  - `incoterm` (string): Tam eşleşme filtresi (örn. FOB, CIF)
+  - `open` (1|0): `1` ise sadece `openExceptions > 0` olanları döndürür
+  - `q` (string): `trackingNumber`, `carrier`, `status` üzerinde LIKE araması
+- Response 200: `[{ id, code, trackingNo, status, carrier, eta, openExceptions, ... }]`
 
 ### GET /api/shipments/:id
 Sevkiyat detayını getirir.
