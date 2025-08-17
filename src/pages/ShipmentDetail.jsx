@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Stack, Typography, Chip, Divider, Grid, CircularProgress, Button, Paper, TextField, MenuItem, Select, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
+import AuthContext from '../contexts/AuthContext';
 import MainCard from '../components/common/MainCard';
 import PageHeader from '../components/common/PageHeader';
 import StatusChip from '../components/common/StatusChip';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
+import NotesPanel from '../components/common/NotesPanel';
 
 export default function ShipmentDetail() {
   const { id } = useParams();
@@ -16,7 +18,7 @@ export default function ShipmentDetail() {
   const [events, setEvents] = useState([]);
   const [charges, setCharges] = useState([]);
   const [exceptions, setExceptions] = useState([]);
-  const [notesDraft, setNotesDraft] = useState('');
+  // Notes handled by NotesPanel
   // quick add states
   const [newLeg, setNewLeg] = useState({ mode: 'road', origin: '', destination: '', eta: '' });
   const [newEvent, setNewEvent] = useState({ status: 'in_transit', location: '', eventTime: '' });
@@ -38,11 +40,10 @@ export default function ShipmentDetail() {
       ]);
   const sh = s.data?.shipment || s.data;
   setShipment(sh);
-  setNotesDraft(sh?.notes || '');
       setLegs(l.data?.legs || l.data || []);
       setEvents(ev.data?.events || ev.data || []);
       setCharges(ch.data?.charges || ch.data || []);
-      setExceptions(ex.data?.exceptions || ex.data || []);
+  setExceptions(ex.data?.exceptions || ex.data || []);
     } catch(e) {
       console.error('Shipment load error', e);
       toast.error('Sevkiyat detayları alınamadı');
@@ -142,6 +143,8 @@ export default function ShipmentDetail() {
     setEditExceptions((m)=>{ const n={...m}; delete n[id]; return n; });
   };
 
+  // Auth context available if needed later
+
   return (
     <Box>
       <PageHeader
@@ -160,23 +163,7 @@ export default function ShipmentDetail() {
           <Stack spacing={2}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <Typography variant="h6">Notlar</Typography>
-                <Paper variant="outlined" sx={{ p: 1.5, mt: 1 }}>
-                  <Stack spacing={1}>
-                    <TextField multiline minRows={3} maxRows={10} value={notesDraft} onChange={e=>setNotesDraft(e.target.value)} placeholder="Sevkiyat ile ilgili notlar" />
-                    <Stack direction="row" spacing={1} justifyContent="flex-end">
-                      <Button variant="outlined" onClick={()=>setNotesDraft(shipment?.notes || '')}>Geri Al</Button>
-                      <Button variant="contained" onClick={async()=>{
-                        try{
-                          await axios.patch(`/shipments/${id}/notes`, { notes: notesDraft || null });
-                          toast.success('Notlar kaydedildi');
-                          // tek alanı local güncelle
-                          setShipment(prev => prev ? ({ ...prev, notes: notesDraft || null }) : prev);
-                        }catch(e){ console.error(e); toast.error('Notlar kaydedilemedi'); }
-                      }}>Kaydet</Button>
-                    </Stack>
-                  </Stack>
-                </Paper>
+                <NotesPanel base="/shipments" entityId={id} />
               </Grid>
               <Grid item xs={12} md={8}>
                 <Stack direction="row" spacing={1} alignItems="center">

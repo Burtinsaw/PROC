@@ -13,6 +13,7 @@ describe('sidebar icon map', () => {
       users: true,
       'shopping-cart': true,
       truck: true,
+  calculator: true,
       'line-chart': true,
       'bar-chart-3': true,
       settings: true,

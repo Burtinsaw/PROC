@@ -8,6 +8,7 @@ import { Trash2 as DeleteIcon, Plus as AddIcon } from 'lucide-react';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
 import MainCard from '../components/common/MainCard';
+import NotesPanel from '../components/common/NotesPanel';
 import { useFeatures } from '../contexts/FeatureContext.jsx';
 import { formatMoney } from '../utils/money';
 import useAllowedCurrencies from '../hooks/useAllowedCurrencies';
@@ -21,7 +22,8 @@ export default function PurchaseOrderDetail(){
   const [loading, setLoading] = useState(true);
   const [shipOpen, setShipOpen] = useState(false);
   const [invOpen, setInvOpen] = useState(false);
-  const [shipmentForm, setShipmentForm] = useState({ carrier:'', trackingNumber:'' });
+  const [shipmentForm, setShipmentForm] = useState({ carrier:'', trackingNumber:'', incoterm:'' });
+  const INCOTERMS = useMemo(() => ['EXW','FCA','FOB','CFR','CIF','CPT','CIP','DAP','DDP'], []);
   const [invoiceForm, setInvoiceForm] = useState({ subtotal:'', taxRate:'18', dueDate:'' });
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [itemForm, setItemForm] = useState({ description:'', quantity:'1', unitPrice:'0' });
@@ -121,9 +123,9 @@ export default function PurchaseOrderDetail(){
   };
   const createShipment = async () => {
     try {
-      await axios.post('/shipments', { purchaseOrderId: po.id, carrier: shipmentForm.carrier, trackingNumber: shipmentForm.trackingNumber, items: shipmentItems.map(i=>({ purchaseOrderItemId:i.purchaseOrderItemId, quantity:Number(i.quantity)||0 })) });
+      await axios.post('/shipments', { purchaseOrderId: po.id, carrier: shipmentForm.carrier, trackingNumber: shipmentForm.trackingNumber, incoterm: shipmentForm.incoterm, items: shipmentItems.map(i=>({ purchaseOrderItemId:i.purchaseOrderItemId, quantity:Number(i.quantity)||0 })) });
       toast.success('Sevkiyat oluşturuldu');
-      setShipOpen(false); setShipmentForm({ carrier:'', trackingNumber:'' }); setShipmentItems([]);
+      setShipOpen(false); setShipmentForm({ carrier:'', trackingNumber:'', incoterm:'' }); setShipmentItems([]);
       load();
     } catch(e){ console.error('Shipment create', e); toast.error(e?.response?.data?.error || 'Sevkiyat oluşturulamadı'); }
   };
@@ -411,6 +413,9 @@ export default function PurchaseOrderDetail(){
           </MainCard>
         </Grid>
       </Grid>
+      <Grid item xs={12} md={6}>
+        <NotesPanel base="/purchase-orders" entityId={id} />
+      </Grid>
 
       {/* Shipment Dialog */}
       <Dialog open={shipOpen} onClose={()=>setShipOpen(false)} maxWidth="md" fullWidth>
@@ -419,6 +424,11 @@ export default function PurchaseOrderDetail(){
           <Stack direction="row" gap={2}>
             <TextField label="Taşıyıcı" value={shipmentForm.carrier} onChange={e=>setShipmentForm(f=>({...f, carrier:e.target.value}))} size="small" fullWidth />
             <TextField label="Takip No" value={shipmentForm.trackingNumber} onChange={e=>setShipmentForm(f=>({...f, trackingNumber:e.target.value}))} size="small" fullWidth />
+            <Select size="small" value={shipmentForm.incoterm||''} displayEmpty fullWidth onChange={e=>setShipmentForm(f=>({...f, incoterm:e.target.value}))}
+              renderValue={(v)=> v || 'Incoterm'}>
+              <MenuItem value=""><em>Seçiniz</em></MenuItem>
+              {INCOTERMS.map(i => <MenuItem key={i} value={i}>{i}</MenuItem>)}
+            </Select>
           </Stack>
           <Typography variant="subtitle2" sx={{ mt:1 }}>PO Kalemleri</Typography>
           <Stack gap={1}>

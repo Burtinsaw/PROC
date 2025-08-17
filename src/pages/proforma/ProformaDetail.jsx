@@ -21,7 +21,7 @@ export default function ProformaDetail(){
     setLoading(true);
     axios.get(`/proformas/by-number/${encodeURIComponent(number)}`)
       .then(({ data })=> { if(mounted){ setData(data); setError(''); } })
-      .catch((e)=> { if(mounted){ setError(e?.response?.data?.error || 'Proforma getirilemedi'); } })
+  .catch(()=> { if(mounted){ setError('Proforma getirilemedi'); } })
       .finally(()=> { if(mounted) setLoading(false); });
     return () => { mounted = false; };
   }, [number]);
@@ -50,7 +50,7 @@ export default function ProformaDetail(){
 
   const handleGoToPO = async () => {
     if (!talepId) return;
-    try {
+  try {
       const { data: po } = await axios.get(`/purchase-orders/by-talep/${talepId}`);
       if (po?.id) {
         navigate(`/purchase-orders/${po.id}`);
@@ -71,7 +71,7 @@ export default function ProformaDetail(){
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch (e) {
+  } catch {
       toast.error('CSV dışa aktarım başarısız');
     }
   };
@@ -87,7 +87,7 @@ export default function ProformaDetail(){
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch (e) {
+  } catch {
       toast.error('Şablon indirilemedi');
     }
   };
@@ -120,8 +120,8 @@ export default function ProformaDetail(){
       // onConfirm callback'ini dialog’a geçir
       setDryRunOpen(true);
       setDryReport({ ...report, __doImport: doImport });
-    } catch (err) {
-      toast.error(err?.response?.data?.error || 'İçe aktarma başarısız');
+    } catch {
+      toast.error('İçe aktarma başarısız');
     } finally {
       setImporting(false);
     }

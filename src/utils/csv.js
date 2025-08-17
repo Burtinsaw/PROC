@@ -1,3 +1,49 @@
+// Basit CSV dışa aktarma yardımcıları
+
+function escapeCsv(value) {
+  if (value == null) return '';
+  const s = String(value);
+  // Eğer virgül, çift tırnak veya satır sonu içeriyorsa tırnakla ve iç tırnakları kaçır
+  if (/[",\n\r]/.test(s)) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+// columns: [{ field, headerName }]
+export function rowsToCsv(rows, columns) {
+  const headers = columns.map(c => escapeCsv(c.headerName || c.field));
+  const lines = [headers.join(',')];
+  for (const row of rows) {
+    const line = columns.map(c => {
+      let v = row?.[c.field];
+      // Tarih gibi nesneleri stringe çevir
+      if (v instanceof Date) v = v.toISOString();
+      return escapeCsv(v);
+    }).join(',');
+    lines.push(line);
+  }
+  return lines.join('\n');
+}
+
+export function downloadCsv(filename, csvText) {
+  const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+export function exportRowsToCsv({ filename = 'shipments.csv', rows, columns }) {
+  const csv = rowsToCsv(rows, columns);
+  downloadCsv(filename, csv);
+}
+
+// İsteğe bağlı toplu export için named exports kullanıyoruz
 // Minimal CSV parser with quote support and delimiter auto-detect (, or ;)
 // Returns { headers: string[], rows: Array<Record<string,string>> }
 export function parseCSV(text){
@@ -59,4 +105,4 @@ export function parseCSV(text){
   return { headers, rows: outRows };
 }
 
-export default parseCSV;
+// Sadece named export

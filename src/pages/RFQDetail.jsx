@@ -5,6 +5,7 @@ import StatusChip from '../components/common/StatusChip';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
 import MainCard from '../components/common/MainCard';
+import NotesPanel from '../components/common/NotesPanel';
 
 export default function RFQDetail() {
 	const { id } = useParams();
@@ -20,7 +21,7 @@ export default function RFQDetail() {
 			setEmailsLoading(true);
 			const { data } = await axios.get(`/rfqs/${id}/emails`);
 			setEmails({ items: data?.items || [], total: data?.total || 0 });
-		} catch (e) {
+	} catch {
 			toast.error('E-postalar yüklenemedi');
 		} finally { setEmailsLoading(false); }
 	}, [id]);
@@ -192,6 +193,9 @@ export default function RFQDetail() {
 									<Typography variant="subtitle2" fontWeight={600} gutterBottom>RFQ Kalemleri</Typography>
 									<Stack gap={.75}>{rfq.items?.length ? rfq.items.map(it => <Stack key={it.id} direction="row" justifyContent="space-between"><Typography>{it.urunAdi || it.productName}</Typography><Typography color="text.secondary">{it.miktar || it.quantity} {it.birim || it.unit}</Typography></Stack>) : <Typography color="text.secondary" variant="body2">Kayıt yok</Typography>}</Stack>
 								</Paper>
+							</Grid>
+							<Grid item xs={12} md={4}>
+								<NotesPanel base="/rfqs" entityId={id} />
 							</Grid>
 							<Grid item xs={12}>
 								<Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>

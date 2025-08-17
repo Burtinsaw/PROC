@@ -21,6 +21,7 @@ const menuItems = [
   { id: 'suppliers', title: 'Tedarikçiler', type: 'item', url: '/suppliers', icon: 'users' },
   { id: 'purchase-orders', title: 'Siparişler', type: 'item', url: '/purchase-orders', icon: 'shopping-cart' },
   { id: 'shipments', title: 'Sevkiyatlar', type: 'item', url: '/shipments', icon: 'truck' },
+  { id: 'logistics-calculators', title: 'Lojistik Hesaplamalar', type: 'item', url: '/logistics/calculators', icon: 'calculator' },
   { id: 'finance', title: 'Finans', type: 'item', url: '/finance', icon: 'line-chart' },
   { id: 'reports', title: 'Raporlar', type: 'item', url: '/reports', icon: 'bar-chart-3' }
     ]

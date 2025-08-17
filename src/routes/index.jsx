@@ -32,6 +32,7 @@ const ProformaDetail = lazy(() => import('../pages/proforma/ProformaDetail'));
 const PurchaseOrders = lazy(() => import('../pages/PurchaseOrders'));
 const PurchaseOrderDetail = lazy(() => import('../pages/PurchaseOrderDetail'));
 const Shipments = lazy(() => import('../pages/Shipments'));
+const ShipmentDetail = lazy(() => import('../pages/ShipmentDetail'));
 const Finance = lazy(() => import('../pages/Finance'));
 const Reports = lazy(() => import('../pages/Reports'));
 const EmailInbox = lazy(() => import('../pages/EmailInbox'));
@@ -52,6 +53,7 @@ const EmailCompose = lazy(() => import('../pages/EmailCompose'));
 const EmailDrafts = lazy(() => import('../pages/EmailDrafts'));
 const EmailScheduled = lazy(() => import('../pages/EmailScheduled'));
 const LogisticsDashboard = lazy(() => import('../pages/LogisticsDashboard'));
+const LogisticsCalculators = lazy(() => import('../pages/LogisticsCalculators'));
 const AdminModules = lazy(() => import('../pages/admin/AdminModules'));
 const AuditChanges = lazy(() => import('../pages/admin/AuditChanges'));
 const Maestro = lazy(() => import('../pages/admin/Maestro'));
@@ -173,6 +175,22 @@ const router = createBrowserRouter([
         element: (
           <FeatureGuard module="logistics">
             <Suspense fallback={<Loader />}><Shipments /></Suspense>
+          </FeatureGuard>
+        ),
+      },
+      {
+        path: 'shipments/:id',
+        element: (
+          <FeatureGuard module="logistics">
+            <Suspense fallback={<Loader />}><ShipmentDetail /></Suspense>
+          </FeatureGuard>
+        ),
+      },
+      {
+        path: 'logistics/calculators',
+        element: (
+          <FeatureGuard module="logistics">
+            <Suspense fallback={<Loader />}><LogisticsCalculators /></Suspense>
           </FeatureGuard>
         ),
       },

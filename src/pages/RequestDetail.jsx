@@ -5,6 +5,7 @@ import StatusChip from '../components/common/StatusChip';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
 import MainCard from '../components/common/MainCard';
+import NotesPanel from '../components/common/NotesPanel';
 
 export default function RequestDetail() {
 	const { id } = useParams();
@@ -152,6 +153,9 @@ export default function RequestDetail() {
 									)) : <Typography color="text.secondary">Kayıt bulunamadı</Typography>}
 								</Stack>
 							</MainCard>
+						</Grid>
+						<Grid item xs={12}>
+							<NotesPanel base="/talepler" entityId={id} />
 						</Grid>
 					</Grid>
 				</Box>
