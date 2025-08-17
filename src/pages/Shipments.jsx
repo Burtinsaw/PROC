@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, lazy, Suspense, useCallback } from 'react';
-import { Box, Stack, Button, CircularProgress, Select, MenuItem, TextField, FormControlLabel, Switch } from '@mui/material';
+import { Box, Stack, Button, CircularProgress, Select, MenuItem, TextField, FormControlLabel, Switch, Chip } from '@mui/material';
 import StatusChip from '../components/common/StatusChip';
 // DataGrid'i lazy alt bileşene taşıdık
 const ShipmentsGrid = lazy(() => import('../tables/ShipmentsGrid'));
@@ -26,11 +26,14 @@ export default function Shipments() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-  const { data } = await axios.get('/shipments');
+      const params = {};
+      if (incotermFilter) params.incoterm = incotermFilter;
+      if (onlyOpen) params.open = '1';
+      const { data } = await axios.get('/shipments', { params });
       const list = data?.shipments || data || [];
-  setRows(list.map(s => ({ id: s.id, trackingNo: s.trackingNo || s.code, status: s.status, carrier: s.carrier || '-', incoterm: s.incoterm || '-', openExceptions: s.openExceptions || 0, eta: s.eta, createdAt: s.createdAt })));
+      setRows(list.map(s => ({ id: s.id, trackingNo: s.trackingNo || s.code, status: s.status, carrier: s.carrier || '-', incoterm: s.incoterm || '-', openExceptions: s.openExceptions || 0, eta: s.eta, createdAt: s.createdAt })));
     } catch(e) { console.error('Shipments error', e); toast.error('Sevkiyatlar alınamadı'); } finally { setLoading(false);} }
-  ,[]);
+  ,[incotermFilter, onlyOpen]);
 
   useEffect(()=>{ load(); },[load]);
 
@@ -51,9 +54,9 @@ export default function Shipments() {
 
   const columns = [
     { field:'trackingNo', headerName:'Takip No', flex:0.8, minWidth:140 },
-  { field:'carrier', headerName:'Taşıyıcı', flex:0.8, minWidth:140 },
-  { field:'incoterm', headerName:'Incoterm', flex:0.6, minWidth:120 },
-  { field:'status', headerName:'Durum', flex:0.7, minWidth:130, renderCell: ({ value }) => <StatusChip status={value} /> },
+    { field:'carrier', headerName:'Taşıyıcı', flex:0.8, minWidth:140 },
+    { field:'incoterm', headerName:'Incoterm', flex:0.6, minWidth:120 },
+    { field:'status', headerName:'Durum', flex:0.7, minWidth:130, renderCell: ({ value }) => <StatusChip status={value} /> },
     { field:'openExceptions', headerName:'Açık İstisna', flex:0.5, minWidth:120, valueGetter: ({ value }) => Number(value||0), renderCell: ({ value }) => (
       <span style={{ display:'inline-block', padding:'2px 8px', borderRadius:12, fontSize:12,
         background: value>0 ? 'rgba(245, 124, 0, 0.15)' : 'rgba(76, 175, 80, 0.15)',
@@ -86,7 +89,7 @@ export default function Shipments() {
       { field:'carrier', headerName:'Taşıyıcı' },
       { field:'incoterm', headerName:'Incoterm' },
       { field:'status', headerName:'Durum' },
-  { field:'openExceptions', headerName:'Açık İstisna' },
+      { field:'openExceptions', headerName:'Açık İstisna' },
       { field:'eta', headerName:'ETA' },
       { field:'createdAt', headerName:'Oluşturma' },
     ];
@@ -100,19 +103,30 @@ export default function Shipments() {
     exportRowsToCsv({ filename: `${base}${suffix}.csv`, rows: source, columns: csvColumns });
   };
 
+  const clearAll = () => { setQueryDraft(''); setQ(''); setIncotermFilter(''); setOnlyOpen(false); setSearchParams({}, { replace:true }); };
+
+  const chips = (
+    <Stack direction="row" spacing={1} sx={{ ml: 1 }}>
+      {onlyOpen && <Chip size="small" label="Açık istisna" onDelete={()=> setOnlyOpen(false)} />}
+      {!!incotermFilter && <Chip size="small" label={`Incoterm: ${incotermFilter}`} onDelete={()=> setIncotermFilter('')} />}
+      {!!q && <Chip size="small" label={`Ara: ${q}`} onDelete={()=> { setQueryDraft(''); setQ(''); }} />}
+    </Stack>
+  );
+
   return (
     <Box>
-    <PageHeader title="Sevkiyatlar" description="Takipteki sevkiyatlar" right={
+      <PageHeader title="Sevkiyatlar" description="Takipteki sevkiyatlar" right={
         <Stack direction="row" spacing={1} alignItems="center">
-  <TextField size="small" placeholder="Ara (takip no, taşıyıcı, durum)" value={queryDraft} onChange={e=>setQueryDraft(e.target.value)} />
+          <TextField size="small" placeholder="Ara (takip no, taşıyıcı, durum)" value={queryDraft} onChange={e=>setQueryDraft(e.target.value)} />
           <Select size="small" value={incotermFilter} displayEmpty onChange={e=>setIncotermFilter(e.target.value)} sx={{ minWidth: 140 }}
             renderValue={(v)=> v || 'Incoterm (tümü)'}>
             <MenuItem value=""><em>Tümü</em></MenuItem>
             {INCOTERMS.map(i => <MenuItem key={i} value={i}>{i}</MenuItem>)}
           </Select>
-      <FormControlLabel sx={{ ml: 1 }} control={<Switch size="small" checked={onlyOpen} onChange={(e)=> setOnlyOpen(e.target.checked)} />} label={`Sadece açık istisna (${openCount})`} />
-  <Button onClick={()=>{ setQueryDraft(''); setQ(''); setIncotermFilter(''); setOnlyOpen(false); setSearchParams({}, { replace:true }); }} variant="text">{`Filtreleri temizle${filterCount ? ` (${filterCount})` : ''}`}</Button>
-      <Button onClick={exportCsv} variant="outlined">CSV</Button>
+          <FormControlLabel sx={{ ml: 1 }} control={<Switch size="small" checked={onlyOpen} onChange={(e)=> setOnlyOpen(e.target.checked)} />} label={`Sadece açık istisna (${openCount})`} />
+          <Button onClick={clearAll} variant="text">{`Filtreleri temizle${filterCount ? ` (${filterCount})` : ''}`}</Button>
+          {chips}
+          <Button onClick={exportCsv} variant="outlined">CSV</Button>
           <Button onClick={load} variant="outlined">Yenile</Button>
         </Stack>
       } />
