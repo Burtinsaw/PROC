@@ -11,7 +11,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import QueryClientProvider from './contexts/QueryClientProvider';
 import React from 'react';
 // Removed PingTest dev widget to reduce noise
-import ContentContainer from './components/layout/ContentContainer';
+// ContentContainer kaldırıldı; AppShellLayout kendi iç yapısını yönetiyor
 import { LanguageProvider } from './contexts/LanguageContext';
 
 // ==============================|| APP - THEME, ROUTER, AUTH ||============================== //
