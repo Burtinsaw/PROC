@@ -4,6 +4,7 @@ import App from './App.jsx'
 import './index.css'
 import { setApiBase } from './utils/axios'
 import { toast } from 'sonner'
+import { FeatureProvider } from './contexts/FeatureContext.jsx'
 
 async function detectBackendBase() {
   // Eğer env ile açıkça verilmişse olduğu gibi kullan
@@ -62,7 +63,6 @@ async function bootstrap(){
       document.head.appendChild(link2);
     }
   } catch { /* ignore */ }
-  const { FeatureProvider } = await import('./contexts/FeatureContext.jsx');
   ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
       <FeatureProvider>

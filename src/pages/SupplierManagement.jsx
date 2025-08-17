@@ -1292,8 +1292,8 @@ function AutoDupCheck({ job, onMap }){
     (async () => {
       if (!job?.suggestions?.length) return;
       try {
-        const { checkCompanyDuplicate } = await import('../api/companies');
-        const m = new Map();
+  // statik import edilen checkCompanyDuplicate'i kullan (dinamik import uyarısını önlemek için)
+  const m = new Map();
         for (let idx = 0; idx < job.suggestions.length; idx++) {
           const sug = job.suggestions[idx];
           const url = sug?.url || sug?.link || sug?.website || '';
