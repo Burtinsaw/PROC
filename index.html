@@ -4,10 +4,30 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
     <title>Vite + React</title>
+    <!-- Minimal inline styles to avoid initial white flash before bundle loads -->
+    <style>
+      /* Reset UA margin early */
+      html, body { height: 100%; }
+      body { margin: 0; background: #fff; }
+      #root { min-height: 100vh; display: grid; place-items: center; }
+      .splash { display: grid; justify-items: center; gap: 12px; color: #213547; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+      .splash-title { font-size: 14px; opacity: 0.8; }
+      .spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid rgba(0,0,0,0.1); border-top-color: #646cff; animation: spin .9s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      noscript { position: fixed; inset: auto 0 0 0; background: #fee2e2; color: #991b1b; padding: 8px 12px; text-align: center; font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fallback content will be replaced by React immediately -->
+      <div class="splash" role="status" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <div class="splash-title">Yükleniyor…</div>
+      </div>
+    </div>
+    <noscript>Bu uygulamayı kullanmak için JavaScript etkin olmalıdır.</noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
