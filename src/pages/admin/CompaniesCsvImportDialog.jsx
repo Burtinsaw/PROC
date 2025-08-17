@@ -249,6 +249,9 @@ export default function CompaniesCsvImportDialog({ open, onClose, onImported }){
                             <Typography variant="caption" color="text.secondary" sx={{ display:'block' }}>
                               {it.row?.email || 'email yok'} {it.row?.phone ? `• ${it.row.phone}` : ''}
                             </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ display:'block' }}>
+                              {it.row?.preferredCurrency ? `PB: ${String(it.row.preferredCurrency).toUpperCase()}` : 'PB yok'}
+                            </Typography>
                             <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
                               <FileText size={14} />
                               <Typography variant="caption" color="text.secondary">Benzerlik: {(it.score*100).toFixed(0)}%</Typography>

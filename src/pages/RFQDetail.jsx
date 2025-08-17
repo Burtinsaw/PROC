@@ -29,6 +29,7 @@ export default function RFQDetail() {
 	const [showScores, setShowScores] = useState(true);
 	const [visibleSuppliers, setVisibleSuppliers] = useState({});
 	const [priceWeight, setPriceWeight] = useState(70);
+	const [sla, setSla] = useState(null);
 
 	// Restore preferences
 	useEffect(() => {
@@ -48,6 +49,16 @@ export default function RFQDetail() {
 			} finally { setLoading(false); }
 		}, [id]);
 		useEffect(() => { loadRfq(); }, [loadRfq]);
+	useEffect(() => {
+		(async ()=>{
+			try {
+				const { data } = await axios.get('/approvals/_summary', { params: { entityType: 'rfq', status: 'pending', fields: 'entityId,slaDeadline,minutesRemaining,isOverdue,nextRole' }, headers: { 'X-Suppress-Error-Toast': '1' } });
+				const arr = Array.isArray(data?.approvals) ? data.approvals : [];
+				const found = arr.find(a => String(a.entityId) === String(id));
+				setSla(found || null);
+			} catch { /* ignore */ }
+		})();
+	}, [id]);
 
 	const infoRows = useMemo(() => rfq ? [
 		{ k: 'Numara', v: rfq.rfqNumber },
@@ -139,6 +150,16 @@ export default function RFQDetail() {
 					<Button size="small" variant="contained" disabled={String(rfq.status).toLowerCase() === 'sent'} onClick={async () => {
 						try { await axios.patch(`/rfqs/${id}/send`); toast.success('RFQ gönderildi'); await loadRfq(); } catch { toast.error('Gönderme başarısız'); }
 					}}>Gönder</Button>
+					{sla && (
+						<Stack direction="row" gap={1} alignItems="center" sx={{ ml: 1 }}>
+							{sla.isOverdue ? (
+								<Chip size="small" color="error" label="SLA: Gecikmiş" />
+							) : sla.minutesRemaining != null ? (
+								<Chip size="small" color={sla.minutesRemaining <= 15 ? 'warning' : 'default'} label={`SLA: ${sla.minutesRemaining} dk`} />
+							) : null}
+							{sla.nextRole && <Chip size="small" variant="outlined" label={`Rol: ${sla.nextRole}`} />}
+						</Stack>
+					)}
 				</Stack>
 			</Paper>
 			<MainCard content sx={{ p: 0, borderRadius: 3, overflow: 'hidden' }}>

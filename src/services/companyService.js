@@ -45,6 +45,16 @@ export async function exportCompanies(params = {}) {
 	return data;
 }
 
+export async function previewMergeCompanies(sourceId, targetId) {
+	const { data } = await api.post('/companies/merge/preview', { sourceId, targetId });
+	return data;
+}
+
+export async function mergeCompanies(sourceId, targetId) {
+	const { data } = await api.post('/companies/merge', { sourceId, targetId });
+	return data;
+}
+
 export default {
 	listCompanies,
 	getCompany,
@@ -53,4 +63,6 @@ export default {
 	deleteCompany,
 	importCompanies,
 	exportCompanies,
+	previewMergeCompanies,
+	mergeCompanies,
 };

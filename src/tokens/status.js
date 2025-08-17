@@ -7,6 +7,7 @@ export const STATUS_TOKENS = {
   rejected: { color: 'error', label: 'Reddedildi' },
   converted: { color: 'secondary', label: 'Dönüştürüldü' },
   quoted: { color: 'info', label: 'Teklif Alındı' },
+  receiving: { color: 'info', label: 'Teslim Alınıyor' },
   'Onay Bekliyor': { color: 'info', label: 'Onay Bekliyor' },
   'Onaylandı': { color: 'success', label: 'Onaylandı' },
   'Reddedildi': { color: 'error', label: 'Reddedildi' },
@@ -28,6 +29,9 @@ STATUS_TOKENS.waiting = { color: 'warning', label: 'Bekleniyor' };
 STATUS_TOKENS.closed = { color: 'success', label: 'Kapandı' };
 STATUS_TOKENS.completed = { color: 'success', label: 'Tamamlandı' };
 STATUS_TOKENS.done = { color: 'success', label: 'Tamamlandı' };
+
+// Logistics channels (optional chips)
+STATUS_TOKENS.passengerDutyFree = { color: 'warning', label: 'Yolcu Beraberi' };
 
 export function resolveStatus(status) {
   return STATUS_TOKENS[status] || { color: 'default', label: status };

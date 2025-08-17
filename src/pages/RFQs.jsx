@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, Chip, CircularProgress, Paper, Stack, TextField, Typography, Tooltip } from '@mui/material';
+import { Box, Button, Chip, CircularProgress, Paper, Stack, Tooltip } from '@mui/material';
 import StatusChip from '../components/common/StatusChip';
 import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -25,18 +25,40 @@ export default function RFQs() {
 	const load = async () => {
 		setLoading(true);
 		try {
-			const { data } = await axios.get('/rfqs');
+				const { data } = await axios.get('/rfqs');
 			const list = Array.isArray(data?.rfqs) ? data.rfqs : [];
-			setRows(list.map((r) => ({
-				id: r.id,
-				rfqNumber: r.rfqNumber,
-				title: r.title,
-				status: r.status,
-				deadline: r.deadline,
-				createdAt: r.createdAt,
-				talepTitle: r.talep?.talepBasligi || '-',
-				createdBy: r.createdBy ? `${r.createdBy.firstName || ''} ${r.createdBy.lastName || ''}`.trim() : '-'
-			})));
+				// Fetch approval SLA summary for RFQs
+				let slaMap = new Map();
+				try {
+					const { data: s } = await axios.get('/approvals/_summary', {
+						params: {
+							entityType: 'rfq',
+							status: 'pending',
+							overdueFirst: 'true',
+							fields: 'entityId,slaDeadline,minutesRemaining,isOverdue,nextRole'
+						},
+						headers: { 'X-Suppress-Error-Toast': '1' }
+					});
+					const arr = Array.isArray(s?.approvals) ? s.approvals : [];
+					slaMap = new Map(arr.map(a => [Number(a.entityId), a]));
+				} catch { /* ignore SLA fetch errors */ }
+				setRows(list.map((r) => {
+					const sla = slaMap.get(Number(r.id));
+					return {
+						id: r.id,
+						rfqNumber: r.rfqNumber,
+						title: r.title,
+						status: r.status,
+						deadline: r.deadline,
+						createdAt: r.createdAt,
+						talepTitle: r.talep?.talepBasligi || '-',
+						createdBy: r.createdBy ? `${r.createdBy.firstName || ''} ${r.createdBy.lastName || ''}`.trim() : '-',
+						slaDeadline: sla?.slaDeadline || null,
+						slaMinutes: sla?.minutesRemaining ?? null,
+						slaOverdue: !!sla?.isOverdue,
+						slaNextRole: sla?.nextRole || null
+					};
+				}));
 		} finally {
 			setLoading(false);
 		}
@@ -56,6 +78,13 @@ export default function RFQs() {
 		{ field: 'title', headerName: 'Başlık', flex: 1.2, minWidth: 200 },
 		{ field: 'talepTitle', headerName: 'Talep', flex: 1, minWidth: 180 },
 		{ field: 'status', headerName: 'Durum', flex: 0.6, minWidth: 120, renderCell: (p) => <StatusChip status={p.value} /> },
+		{ field: 'sla', headerName: 'SLA', flex: 0.7, minWidth: 140, sortable: false, filterable: false, valueGetter: (params)=> params.row.slaOverdue ? 'overdue' : (params.row.slaMinutes ?? null), renderCell: (p)=>{
+			const r = p.row;
+			if(r.slaOverdue) return <Chip size="small" color="error" label="Gecikmiş" />;
+			if(r.slaMinutes != null) return <Chip size="small" color={r.slaMinutes <= 15 ? 'warning' : 'default'} label={`${r.slaMinutes} dk`} />;
+			return <Chip size="small" variant="outlined" label="-" />;
+		}},
+		{ field: 'slaNextRole', headerName: 'Sıradaki Rol', flex: 0.7, minWidth: 140, renderCell: (p)=> p.value ? <Chip size="small" variant="outlined" label={p.value} /> : '-' },
 		{ field: 'deadline', headerName: 'Son Tarih', flex: 0.8, minWidth: 140, valueGetter: (params) => {
 			const value = params?.value;
 			if(!value) return '-';

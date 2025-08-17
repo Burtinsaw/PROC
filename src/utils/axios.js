@@ -10,9 +10,7 @@ const initialBase = import.meta.env.VITE_APP_API_URL || '/api';
 const axiosServices = axios.create({
   baseURL: initialBase,
   timeout: 10000, // 10 saniye timeout
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  headers: { 'Content-Type': 'application/json' }
 });
 
 // Basit backoff hesaplayıcı (exponential + jitter)
@@ -52,7 +50,6 @@ export function setApiBase(url) {
   if (!url) return;
   axiosServices.defaults.baseURL = url;
   try { window.__API_BASE = url; } catch { /* ignore */ }
-  // Ayrıca kök origin’i ayrı saklayalım (socket için kullanacağız)
   try {
     const u = new URL(url, window.location.origin);
     window.__API_ORIGIN = `${u.protocol}//${u.hostname}${u.port ? ':'+u.port : ''}`;
@@ -63,25 +60,17 @@ export function getApiBase(){ return axiosServices.defaults.baseURL; }
 // Request interceptor for API calls
 axiosServices.interceptors.request.use(
   (config) => {
-  const token = localStorage.getItem('serviceToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    // Accept-Language from saved uiLang
+    const token = localStorage.getItem('serviceToken');
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     try {
       const uiLang = localStorage.getItem('uiLang');
-      if(uiLang) config.headers['Accept-Language'] = uiLang;
+      if (uiLang) config.headers['Accept-Language'] = uiLang;
     } catch {/* ignore */}
-    
-    // Tüm istekleri logla (development'da)
-  if (DEBUG_HTTP) {
-      console.log(`🔄 ${config.method?.toUpperCase()} ${config.url}`);
-    }
-    
+    if (DEBUG_HTTP) console.log(`🔄 ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
   (error) => {
-  if (DEBUG_HTTP) console.error('❌ Request Error:', error);
+    if (DEBUG_HTTP) console.error('❌ Request Error:', error);
     return Promise.reject(error);
   }
 );
@@ -89,20 +78,16 @@ axiosServices.interceptors.request.use(
 // Response interceptor for API calls
 axiosServices.interceptors.response.use(
   (response) => {
-    // Başarılı response'ları logla (development'da)
-    if (DEBUG_HTTP) {
-      console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url}:`, response.status);
-    }
+    if (DEBUG_HTTP) console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url}:`, response.status);
     return response;
   },
   async (error) => {
     const { response, message } = error;
-  const cfg = error.config || {};
-  const headers = cfg.headers || {};
-  const getHeader = (k) => headers[k] ?? headers[k?.toLowerCase?.()] ?? headers[k?.toUpperCase?.()];
-  const suppress = cfg._suppressErrorToast || getHeader('X-Suppress-Error-Toast') === '1';
-    
-    // Error loglama
+    const cfg = error.config || {};
+    const headers = cfg.headers || {};
+    const getHeader = (k) => headers[k] ?? headers[k?.toLowerCase?.()] ?? headers[k?.toUpperCase?.()];
+    const suppress = cfg._suppressErrorToast || getHeader('X-Suppress-Error-Toast') === '1';
+
     if (!suppress && DEBUG_HTTP) {
       console.error('❌ Response Error:', {
         url: error.config?.url,
@@ -110,23 +95,18 @@ axiosServices.interceptors.response.use(
         message: response?.data?.message || message
       });
     }
-    
-  // Unauthorized durumunda token'ı temizle ve login'e yönlendir
+
+    // 401: token temizle ve login'e yönlendir
     if (response?.status === 401) {
       localStorage.removeItem('serviceToken');
-      
-      // Eğer zaten login sayfasında değilse yönlendir
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
+      if (!window.location.pathname.includes('/login')) window.location.href = '/login';
     }
-    
-    // Otomatik retry (idempotent istekler için): 429/502/503 veya network
+
+    // Otomatik retry (idempotent): 429/502/503 veya network
     if (shouldRetry(error)) {
       cfg.__retryCount = (cfg.__retryCount || 0) + 1;
       const maxRetries = Number(import.meta.env.VITE_HTTP_MAX_RETRIES || 3);
       if (cfg.__retryCount <= maxRetries) {
-        // Retry-After header (saniye) var mı?
         let retryAfterMs;
         try {
           const ra = response?.headers?.['retry-after'] || response?.headers?.['Retry-After'];
@@ -147,13 +127,16 @@ axiosServices.interceptors.response.use(
       if (response?.status === 429) {
         showToastThrottled('warning', 'Çok fazla istek, lütfen biraz bekleyin.', 'rate-limit');
       } else if (response && response?.status >= 400 && response?.status !== 401) {
-        showToastThrottled('error', response?.data?.message || `Hata: ${response.status}`, `e:${response.status}:${cfg.url}`);
+        const reqId = response?.headers?.['x-request-id'] || response?.data?.requestId;
+        const baseMsg = response?.data?.message || `Hata: ${response.status}`;
+        const msg = reqId ? `${baseMsg} (Request-ID: ${reqId})` : baseMsg;
+        showToastThrottled('error', msg, `e:${response.status}:${cfg.url}`);
       } else if (!response) {
         if (DEBUG_HTTP) console.error('🌐 Network Error: Server unreachable');
         showToastThrottled('error', 'Sunucuya ulaşılamıyor', 'network');
       }
     }
-    
+
     return Promise.reject(error);
   }
 );

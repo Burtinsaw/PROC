@@ -18,7 +18,8 @@ const HEADER_CANDIDATES = {
   code: ['code','kod','company code','firma kodu','sicil'],
   type: ['type','tip','tür','tur','category','kategori','role'],
   email: ['email','mail','e-posta','eposta','e mail'],
-  phone: ['phone','telefon','tel','gsm','mobile']
+  phone: ['phone','telefon','tel','gsm','mobile'],
+  preferredCurrency: ['preferredcurrency','currency','para birimi','pb','kur','default currency']
 };
 
 function normalizeHeader(h){ return String(h||'').toLowerCase().trim(); }
@@ -52,7 +53,7 @@ export function parseCompaniesCsv(raw){
   for(let i=startIdx;i<lines.length;i++){
     const cells = lines[i].split(delimiter).map(c=>c.trim());
     if(cells.every(c=>!c)){ skipped++; continue; }
-    const base = { name:'', code:'', type:'', email:'', phone:'' };
+  const base = { name:'', code:'', type:'', email:'', phone:'', preferredCurrency:'' };
     if(hasHeader){
       Object.entries(headerMap).forEach(([colIdx, field]) => {
         const val = cells[colIdx];

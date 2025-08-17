@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Grid, Card, CardContent, TextField, Button, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Stack, Tooltip, TableSortLabel, TablePagination } from '@mui/material';
-import { Download, Upload, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Box, Typography, Grid, Card, CardContent, TextField, Button, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Stack, Tooltip, TableSortLabel, TablePagination, Dialog, DialogTitle, DialogContent, DialogActions, Autocomplete, Select, MenuItem } from '@mui/material';
+import { Download, Upload, Plus, Pencil, Trash2, Merge } from 'lucide-react';
 import api from '../../services/api';
 import CompanyDialog from './CompanyDialog';
 import companyService from '../../services/companyService';
 import CompaniesCsvImportDialog from './CompaniesCsvImportDialog';
+import usePermissions from '../../hooks/usePermissions';
+import { orderedCurrencies, PRIORITY_CURRENCIES } from '../../constants/currencies';
 
 export default function Companies(){
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState('');
+  const [pc, setPc] = useState('');
+  const [currencies, setCurrencies] = useState(null);
   const [dlgOpen, setDlgOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [importing, setImporting] = useState(false);
@@ -17,16 +21,41 @@ export default function Companies(){
   const [order, setOrder] = useState('asc');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const [mergeSource, setMergeSource] = useState(null);
+  const [mergeTarget, setMergeTarget] = useState(null);
+  const [mergePreview, setMergePreview] = useState(null);
+  const [mergeLoading, setMergeLoading] = useState(false);
+  const { any } = usePermissions();
 
   useEffect(()=>{
     (async ()=>{
       const params = new URLSearchParams();
       if(q) params.set('q', q);
+  if(pc) params.set('preferredCurrency', pc);
       const { data } = await api.get(`/companies?${params.toString()}`);
       setRows(data||[]);
     })();
   // only run on mount; search uses explicit handler
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Allowed currencies'i bir defa yükle (fallback: statik sıra)
+  useEffect(()=>{
+    (async ()=>{
+      try{
+        const { data } = await api.get('/companies/_allowed-currencies');
+        const list = Array.isArray(data?.allowedCurrencies) ? data.allowedCurrencies : [];
+        const uniq = Array.from(new Set(list.map(c => String(c || '').toUpperCase()).filter(Boolean)));
+        const prioritized = [
+          ...PRIORITY_CURRENCIES.filter(c => uniq.includes(c)),
+          ...uniq.filter(c => !PRIORITY_CURRENCIES.includes(c))
+        ];
+        setCurrencies(prioritized.length ? prioritized : null);
+      } catch{
+        setCurrencies(null);
+      }
+    })();
   }, []);
 
   function handleRequestSort(property){
@@ -68,23 +97,40 @@ export default function Companies(){
       <Card sx={{ mb:2 }}>
         <CardContent>
           <Grid container spacing={1} alignItems="center">
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField fullWidth placeholder="Ara (ad/kod/email/telefon)" value={q} onChange={(e)=> setQ(e.target.value)} />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Select fullWidth displayEmpty value={pc} onChange={(e)=> setPc(e.target.value)}>
+                <MenuItem value=""><em>PB: Tümü</em></MenuItem>
+                {(currencies || orderedCurrencies()).map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+              </Select>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Button variant="contained" onClick={async ()=>{
                 const params = new URLSearchParams();
                 if(q) params.set('q', q);
+                if(pc) params.set('preferredCurrency', pc);
                 const { data } = await api.get(`/companies?${params.toString()}`);
                 setRows(data||[]);
               }} startIcon={<Plus size={16} />}>Ara</Button>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Stack direction="row" spacing={1}>
                 <Button variant="contained" color="primary" startIcon={<Plus size={16} />} onClick={()=> { setEditing(null); setDlgOpen(true); }}>Yeni Şirket</Button>
                 <Button variant="outlined" startIcon={<Download size={16} />} onClick={()=> window.open('/api/companies/export', '_blank')}>Dışa Aktar</Button>
+                <Button variant="outlined" startIcon={<Download size={16} />} onClick={()=>{
+                  const params = new URLSearchParams();
+                  if(q) params.set('q', q);
+                  if(pc) params.set('preferredCurrency', pc);
+                  const url = `/api/companies/export${params.toString()?`?${params.toString()}`:''}`;
+                  window.open(url, '_blank');
+                }}>Dışa Aktar (Filtreli)</Button>
                 <Button variant="outlined" startIcon={<Upload size={16} />} onClick={()=> setCsvDlgOpen(true)}>İçe Aktar (CSV)</Button>
                 <Button variant="outlined" startIcon={<Upload size={16} />} onClick={()=> setImporting(true)}>İçe Aktar (JSON)</Button>
+                {any(['settings:write']) && (
+                  <Button variant="outlined" startIcon={<Merge size={16} />} onClick={()=> setMergeOpen(true)}>Birleştir</Button>
+                )}
               </Stack>
             </Grid>
           </Grid>
@@ -109,6 +155,9 @@ export default function Companies(){
               <TableCell sortDirection={orderBy==='phone'?order:false}>
                 <TableSortLabel active={orderBy==='phone'} direction={orderBy==='phone'?order:'asc'} onClick={()=>handleRequestSort('phone')}>Telefon</TableSortLabel>
               </TableCell>
+              <TableCell sortDirection={orderBy==='preferredCurrency'?order:false}>
+                <TableSortLabel active={orderBy==='preferredCurrency'} direction={orderBy==='preferredCurrency'?order:'asc'} onClick={()=>handleRequestSort('preferredCurrency')}>PB</TableSortLabel>
+              </TableCell>
               <TableCell align="right">İşlemler</TableCell>
             </TableRow>
           </TableHead>
@@ -120,12 +169,13 @@ export default function Companies(){
                 <TableCell>{r.type}</TableCell>
                 <TableCell>{r.email}</TableCell>
                 <TableCell>{r.phone}</TableCell>
+                <TableCell>{r.preferredCurrency || '-'}</TableCell>
                 <TableCell align="right">
                   <Tooltip title="Düzenle"><IconButton onClick={()=> { setEditing(r); setDlgOpen(true); }}><Pencil size={16} /></IconButton></Tooltip>
                   <Tooltip title="Sil"><IconButton color="error" onClick={async ()=>{
                     if(!confirm('Silmek istediğinize emin misiniz?')) return;
                     await companyService.deleteCompany(r.id);
-                    const params = new URLSearchParams(); if(q) params.set('q', q); const { data } = await api.get(`/companies?${params.toString()}`); setRows(data||[]);
+                    const params = new URLSearchParams(); if(q) params.set('q', q); if(pc) params.set('preferredCurrency', pc); const { data } = await api.get(`/companies?${params.toString()}`); setRows(data||[]);
                   }}><Trash2 size={16} /></IconButton></Tooltip>
                 </TableCell>
               </TableRow>
@@ -151,7 +201,7 @@ export default function Companies(){
           setDlgOpen(false);
           setEditing(null);
           if(changed){
-            const params = new URLSearchParams(); if(q) params.set('q', q); const { data } = await api.get(`/companies?${params.toString()}`); setRows(data||[]);
+            const params = new URLSearchParams(); if(q) params.set('q', q); if(pc) params.set('preferredCurrency', pc); const { data } = await api.get(`/companies?${params.toString()}`); setRows(data||[]);
           }
         }}
         onSubmit={async (form)=>{
@@ -165,7 +215,7 @@ export default function Companies(){
         open={csvDlgOpen}
         onClose={()=> setCsvDlgOpen(false)}
         onImported={async ()=>{
-          const params = new URLSearchParams(); if(q) params.set('q', q); const { data } = await api.get(`/companies?${params.toString()}`); setRows(data||[]);
+          const params = new URLSearchParams(); if(q) params.set('q', q); if(pc) params.set('preferredCurrency', pc); const { data } = await api.get(`/companies?${params.toString()}`); setRows(data||[]);
         }}
       />
 
@@ -181,7 +231,7 @@ export default function Companies(){
             if(!companies.length) alert('Geçerli bir companies JSON bekleniyor.');
             else {
               await companyService.importCompanies(companies);
-              const params = new URLSearchParams(); if(q) params.set('q', q); const { data } = await api.get(`/companies?${params.toString()}`); setRows(data||[]);
+              const params = new URLSearchParams(); if(q) params.set('q', q); if(pc) params.set('preferredCurrency', pc); const { data } = await api.get(`/companies?${params.toString()}`); setRows(data||[]);
             }
           } catch(err){
             alert('İçe aktarma hatası: ' + (err?.message||'bilinmiyor'));
@@ -195,6 +245,79 @@ export default function Companies(){
         const input = document.getElementById('comp-import');
         if(input) input.click();
       }, 0)}
+
+      {/* Merge Dialog */}
+      <Dialog open={mergeOpen} onClose={()=> setMergeOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Şirket Birleştir</DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2} sx={{ mt: 0.5 }}>
+            <Grid size={{ xs: 12 }}>
+              <Autocomplete
+                options={rows}
+                getOptionLabel={(o)=> o?.name ? `${o.name}${o.code?` (${o.code})`:''}` : ''}
+                onChange={(_,v)=> setMergeSource(v)}
+                renderInput={(params)=> <TextField {...params} label="Kaynak (taşınacak)" placeholder="Şirket seçin" />}
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Autocomplete
+                options={rows}
+                getOptionLabel={(o)=> o?.name ? `${o.name}${o.code?` (${o.code})`:''}` : ''}
+                onChange={(_,v)=> setMergeTarget(v)}
+                renderInput={(params)=> <TextField {...params} label="Hedef (kalacak)" placeholder="Şirket seçin" />}
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Stack direction="row" spacing={1}>
+                <Button disabled={!mergeSource || !mergeTarget || mergeSource?.id===mergeTarget?.id} onClick={async ()=>{
+                  if(!mergeSource || !mergeTarget) return;
+                  setMergeLoading(true);
+                  try{
+                    const p = await companyService.previewMergeCompanies(mergeSource.id, mergeTarget.id);
+                    setMergePreview(p);
+                  } catch(err){
+                    alert('Önizleme hatası: ' + (err?.response?.data?.message || err?.message || 'bilinmiyor'));
+                  } finally { setMergeLoading(false); }
+                }}>Önizleme</Button>
+                <Button variant="contained" color="error" disabled={!mergePreview || mergeSource?.id===mergeTarget?.id || mergeLoading} onClick={async ()=>{
+                  if(!mergeSource || !mergeTarget) return;
+                  if(!confirm(`${mergeSource.name} -> ${mergeTarget.name} birleştirilecek. Emin misiniz?`)) return;
+                  setMergeLoading(true);
+                  try{
+                    await companyService.mergeCompanies(mergeSource.id, mergeTarget.id);
+                    alert('Birleştirme tamamlandı.');
+                    // refresh list
+                    const params = new URLSearchParams(); if(q) params.set('q', q); if(pc) params.set('preferredCurrency', pc); const { data } = await api.get(`/companies?${params.toString()}`); setRows(data||[]);
+                    setMergeOpen(false); setMergeSource(null); setMergeTarget(null); setMergePreview(null);
+                    // Audit ekranını birleştirme kapsamıyla aç (paylaşılabilir ve izlenebilir)
+                    const auditUrl = `/admin/audit?scope=companyMerge&q=${encodeURIComponent(String(mergeTarget?.name || ''))}`;
+                    window.open(auditUrl, '_blank');
+                  } catch(err){
+                    alert('Birleştirme hatası: ' + (err?.response?.data?.message || err?.message || 'bilinmiyor'));
+                  } finally { setMergeLoading(false); }
+                }}>Birleştir ve Taşı</Button>
+              </Stack>
+            </Grid>
+            {!!mergePreview && (
+              <Grid size={{ xs: 12 }}>
+                <Card variant="outlined"><CardContent>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>Taşınacak Kayıtlar</Typography>
+                  <Typography variant="body2">Proformalar: <b>{mergePreview?.counts?.proformas||0}</b></Typography>
+                  <Typography variant="body2">Satınalma Siparişleri: <b>{mergePreview?.counts?.purchaseOrders||0}</b></Typography>
+                  <Typography variant="body2">Teklifler: <b>{mergePreview?.counts?.quotes||0}</b></Typography>
+                  <Typography variant="body2">RFQ Davetleri: <b>{mergePreview?.counts?.rfqInvites||0}</b></Typography>
+                  <Typography variant="body2">İhale Kazanan (RFQ): <b>{mergePreview?.counts?.rfqsAwarded||0}</b></Typography>
+                  <Typography variant="body2">Kullanıcılar: <b>{mergePreview?.counts?.users||0}</b></Typography>
+                  <Typography variant="body2">Araştırma Kayıtları: <b>{mergePreview?.counts?.researchSaved||0}</b></Typography>
+                </CardContent></Card>
+              </Grid>
+            )}
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={()=> setMergeOpen(false)}>Kapat</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
