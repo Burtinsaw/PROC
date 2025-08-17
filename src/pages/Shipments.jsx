@@ -29,11 +29,12 @@ export default function Shipments() {
       const params = {};
       if (incotermFilter) params.incoterm = incotermFilter;
       if (onlyOpen) params.open = '1';
+      if (q) params.q = q;
       const { data } = await axios.get('/shipments', { params });
       const list = data?.shipments || data || [];
       setRows(list.map(s => ({ id: s.id, trackingNo: s.trackingNo || s.code, status: s.status, carrier: s.carrier || '-', incoterm: s.incoterm || '-', openExceptions: s.openExceptions || 0, eta: s.eta, createdAt: s.createdAt })));
     } catch(e) { console.error('Shipments error', e); toast.error('Sevkiyatlar alınamadı'); } finally { setLoading(false);} }
-  ,[incotermFilter, onlyOpen]);
+  ,[incotermFilter, onlyOpen, q]);
 
   useEffect(()=>{ load(); },[load]);
 
