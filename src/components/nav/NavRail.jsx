@@ -3,6 +3,7 @@ import { Box, Tooltip, IconButton } from '@mui/material';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import navConfig from '../../navigation/navConfig';
+import { useFeatures } from '../../contexts/FeatureContext';
 import usePermissions from '../../hooks/usePermissions';
 import Logo from '../common/Logo';
 
@@ -15,8 +16,14 @@ export default function NavRail({ onHoverItem, activeId, onRegisterFocusApi, col
   const [focusIndex, setFocusIndex] = useState(0);
   const itemRefs = useRef([]);
   const { any } = usePermissions();
+  const { modules } = useFeatures();
   const railItems = useMemo(()=> {
     return navConfig.filter(item => {
+      // modül kapalıysa gizle (email ve help gibi bağımsız path'lere dokunma)
+      if (item.id === 'lojistik' && modules && modules.logistics === false) return false;
+      if (item.id === 'finans' && modules && modules.finance === false) return false;
+      if (item.id === 'raporlar' && modules && modules.reporting === false) return false;
+      // procurement ana grup: talep/satinalma her zaman açık varsayımı; gerekirse modules.procurement eklenebilir
       if(item.path) return true; // simple path items always visible (could also gate)
       if(item.groups) {
         const groupHas = item.groups.some(g => g.links?.some(l => !l.permsAny || any(l.permsAny)));
@@ -30,7 +37,7 @@ export default function NavRail({ onHoverItem, activeId, onRegisterFocusApi, col
         links: g.links.filter(l => !l.permsAny || any(l.permsAny))
       })).filter(g => g.links.length)
     }) : item);
-  }, [any]);
+  }, [any, modules]);
 
   useEffect(()=> {
     const idx = railItems.findIndex(i => (i.path && location.pathname.startsWith(i.path)) || location.pathname.startsWith('/'+i.id));

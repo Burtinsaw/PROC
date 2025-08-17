@@ -62,9 +62,12 @@ async function bootstrap(){
       document.head.appendChild(link2);
     }
   } catch { /* ignore */ }
+  const { FeatureProvider } = await import('./contexts/FeatureContext.jsx');
   ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
-      <App />
+      <FeatureProvider>
+        <App />
+      </FeatureProvider>
     </React.StrictMode>,
   );
 }

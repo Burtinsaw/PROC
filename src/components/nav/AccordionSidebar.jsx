@@ -5,6 +5,7 @@ import { ChevronLeft } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import navConfig from '../../navigation/navConfig';
+import { useFeatures } from '../../contexts/FeatureContext';
 import BackendStatus from '../BackendStatus';
 import { prefetchRoute } from '../../utils/prefetchRoutes';
 
@@ -30,7 +31,15 @@ export default function AccordionSidebar({ leftOffset = 0, topOffset = 56, onCol
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const items = useMemo(()=> navConfig, []);
+  const { modules } = useFeatures();
+  const items = useMemo(()=> {
+    return navConfig.filter(item => {
+      if (item.id === 'lojistik' && modules && modules.logistics === false) return false;
+      if (item.id === 'finans' && modules && modules.finance === false) return false;
+      if (item.id === 'raporlar' && modules && modules.reporting === false) return false;
+      return true;
+    });
+  }, [modules]);
 
   // Listen for global email counts changes to refresh badge
   useEffect(() => {

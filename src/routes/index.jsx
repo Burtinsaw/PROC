@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
+import FeatureGuard from '../components/feature/FeatureGuard';
 const ProcurementDashboard = lazy(() => import('../pages/ProcurementDashboard'));
 
 // project imports
@@ -51,6 +52,9 @@ const EmailCompose = lazy(() => import('../pages/EmailCompose'));
 const EmailDrafts = lazy(() => import('../pages/EmailDrafts'));
 const EmailScheduled = lazy(() => import('../pages/EmailScheduled'));
 const LogisticsDashboard = lazy(() => import('../pages/LogisticsDashboard'));
+const AdminModules = lazy(() => import('../pages/admin/AdminModules'));
+const AuditChanges = lazy(() => import('../pages/admin/AuditChanges'));
+const Maestro = lazy(() => import('../pages/admin/Maestro'));
 
 // ==============================|| ROUTING RENDER ||============================== //
 
@@ -154,7 +158,11 @@ const router = createBrowserRouter([
       },
       {
         path: 'purchase-orders',
-  element: <Suspense fallback={<Loader />}><PurchaseOrders /></Suspense>,
+        element: (
+          <FeatureGuard module="procurement">
+            <Suspense fallback={<Loader />}><PurchaseOrders /></Suspense>
+          </FeatureGuard>
+        ),
       },
       {
         path: 'purchase-orders/:id',
@@ -162,14 +170,26 @@ const router = createBrowserRouter([
       },
       {
         path: 'shipments',
-  element: <Suspense fallback={<Loader />}><Shipments /></Suspense>,
+        element: (
+          <FeatureGuard module="logistics">
+            <Suspense fallback={<Loader />}><Shipments /></Suspense>
+          </FeatureGuard>
+        ),
       },
   { path: 'lojistik', element: <Suspense fallback={<Loader />}><LogisticsDashboard /></Suspense> },
       {
         path: 'finance',
-  element: <Suspense fallback={<Loader />}><Finance /></Suspense>,
+        element: (
+          <FeatureGuard module="finance">
+            <Suspense fallback={<Loader />}><Finance /></Suspense>
+          </FeatureGuard>
+        ),
       },
-  { path: 'raporlar', element: <Suspense fallback={<Loader />}><Reports /></Suspense> },
+  { path: 'raporlar', element: (
+    <FeatureGuard module="reporting">
+      <Suspense fallback={<Loader />}><Reports /></Suspense>
+    </FeatureGuard>
+  ) },
   { path: 'email', loader: () => { window.location.replace('/email/inbox'); return null; } },
   { path: 'email/compose', element: <Suspense fallback={<Loader />}><EmailCompose /></Suspense> },
   { path: 'email/drafts', element: <Suspense fallback={<Loader />}><EmailDrafts /></Suspense> },
@@ -194,10 +214,34 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'admin/modules',
+        element: (
+          <PermissionGuard anyOf={["settings:write"]}>
+            <Suspense fallback={<Loader />}><AdminModules /></Suspense>
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: 'admin/audit',
+        element: (
+          <PermissionGuard anyOf={["admin:users","users:read","settings:write"]}>
+            <Suspense fallback={<Loader />}><AuditChanges /></Suspense>
+          </PermissionGuard>
+        ),
+      },
+      {
         path: 'admin/users',
         element: (
           <PermissionGuard anyOf={["users:read"]}>
             <UserManagement />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: 'admin/maestro',
+        element: (
+          <PermissionGuard anyOf={["settings:write"]}>
+            <Suspense fallback={<Loader />}><Maestro /></Suspense>
           </PermissionGuard>
         ),
       },

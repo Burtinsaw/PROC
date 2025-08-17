@@ -80,10 +80,19 @@ const navConfig = [
         links: [
           { id: 'admin-home', label: 'Yönetim Ana Sayfa', path: '/admin', permsAny: ['users:read','settings:write'] },
           { id: 'admin-users', label: 'Kullanıcılar', path: '/admin/users', permsAny: ['users:read'] },
-          { id: 'admin-companies', label: 'Şirketler', path: '/admin/companies', permsAny: ['users:read','settings:write'] }
+          { id: 'admin-companies', label: 'Şirketler', path: '/admin/companies', permsAny: ['users:read','settings:write'] },
+      { id: 'admin-modules', label: 'Modüller', path: '/admin/modules', permsAny: ['settings:write'] },
+      { id: 'admin-audit', label: 'Ayar Değişiklikleri', path: '/admin/audit', permsAny: ['admin:users'] }
         ]
       }
     ]
+  },
+  {
+    id: 'maestro',
+    label: 'Maestro',
+    icon: Shield,
+    path: '/admin/maestro',
+    permsAny: ['settings:write']
   },
   {
     id: 'settings',
