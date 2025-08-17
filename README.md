@@ -46,6 +46,10 @@ Modern ve güvenli satın alma yönetim sistemi. Yeni nesil Aurora temalı aray�
 - Ön yüz: Shipments listesi (arama, incoterm, URL senk), seçim + CSV export; Shipment Detail (quick-add formlar, timeline, inline düzenleme, resolved toggle)
 - Detaylar için: `docs/API-SHIPMENTS.md`
 
+### Notlar (Notes) — Ortak API
+- RFQ, Satınalma Siparişi, Talep ve Sevkiyat için çoklu notlar uç noktaları aktiftir: `GET/POST/DELETE /api/<entity>/:id/notes`
+- Ortak sözleşme: `docs/API-NOTES.md`
+
 ## 📦 Kurulum
 
 ### 1. Depoyu Clone Edin

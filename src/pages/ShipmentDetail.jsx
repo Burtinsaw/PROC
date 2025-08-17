@@ -72,6 +72,10 @@ export default function ShipmentDetail() {
     };
   }, [charges, exceptions]);
 
+  const fmtDate = (d) => {
+    try { return d ? new Date(d).toLocaleString('tr-TR') : '-'; } catch { return '-'; }
+  };
+
   const addLeg = async () => {
     try {
       if(!newLeg.origin || !newLeg.destination){ toast.error('Origin ve destination gerekli'); return; }
@@ -338,7 +342,14 @@ export default function ShipmentDetail() {
                     return (
                       <Paper key={x.id || idx} variant="outlined" sx={{ p: 1.5 }}>
                         <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
-                          <Typography variant="subtitle2">{x.code || 'EXCEPTION'}</Typography>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Typography variant="subtitle2">{x.code || 'EXCEPTION'}</Typography>
+                            {/* Önem (severity) ve durum rozetleri */}
+                            {x.severity && (
+                              <Chip size="small" color={x.severity==='high' ? 'error' : x.severity==='medium' ? 'warning' : 'default'} variant="outlined" label={`Önem: ${x.severity}`} />
+                            )}
+                            <Chip size="small" color={x.resolvedAt ? 'success' : 'warning'} variant="outlined" label={x.resolvedAt ? `Çözüldü • ${fmtDate(x.resolvedAt)}` : 'Açık'} />
+                          </Stack>
                           {!draft ? (
                             <Button size="small" variant="text" onClick={()=>startEditException(x)}>Düzenle</Button>
                           ) : (
@@ -350,7 +361,6 @@ export default function ShipmentDetail() {
                         </Stack>
                         {!draft ? (
                           <>
-                            <Typography variant="body2" color="text.secondary">Önem: {x.severity || '-'}</Typography>
                             {x.message && <Typography variant="body2" color="text.secondary">{x.message}</Typography>}
                             <FormControlLabel sx={{ mt: 0.5 }} control={<Switch size="small" checked={!!x.resolvedAt} onChange={async (e)=>{
                               try {

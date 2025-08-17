@@ -138,8 +138,9 @@ Tüm uç noktalar Auth gerektirir ve `:shipmentId` geçerli bir sevkiyat olmalı
   ```
   Response 201: `{ id, shipmentId, text, createdById, createdByName, createdAt }`
 - DELETE /api/shipments/:shipmentId/notes/:noteId
-  RBAC: Yalnızca `admin` veya satınalma müdürü rollerindeki kullanıcılar silebilir.
+  RBAC: `admin`, `satinalma_muduru`, `purchase_manager`, `procurement_manager` rolleri silebilir.
   Response 200: `{ ok: true }`
+  Detaylı ortak sözleşme için bkz: `docs/API-NOTES.md`.
 
 ### PATCH /api/shipments/:id/status
 Durum güncelleme.

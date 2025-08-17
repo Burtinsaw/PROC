@@ -18,6 +18,7 @@ Güncellendi: 2025-08-17
   - Shipments listesi: hızlı arama (300ms debounce), Incoterm filtresi, URL senkronizasyonu (?q, ?incoterm), seçim ve sadece seçili satırları CSV dışa aktarım, GridToolbar, “Filtreleri temizle”.
   - Shipment Detail: özet chip’ler, bacak/olay/masraf/istisna listeleri, tümü için hızlı-ekle formları, olay zaman çizelgesi, istisna inline düzenleme, “Çözüldü/Açık” toggle (resolvedAt), Notlar listesi (GET/POST), rol-korumalı silme (DELETE).
   - Alan hizalama: events.eventTime, exceptions.code; event formundaki lokasyon geçici olarak description’da tutuluyor.
+  - Ortak NotesPanel bileşeni ile RFQ / Satınalma Siparişi / Talep sayfalarında çoklu notlar etkinleştirildi.
 - Test & CI
   - Frontend: CSV yardımcıları için birim testleri; tüm testler yeşil.
   - Backend: Smoke test Shipments nested varlıklar; tüm testler yeşil.
@@ -27,6 +28,7 @@ Güncellendi: 2025-08-17
 - Charges için inline düzenleme/silme.
 - Zaman çizelgesinde ikon/renk iyileştirmeleri.
 - Dış takip servisleri entegrasyonu (carrier API) ve Location/Carrier sözlüklerinin zenginleşmesi.
+ - Dokümantasyon: `API-NOTES.md` referansı ilgili sayfalarda yaygınlaştırıldı; gerektiğinde örnekler genişletilecek.
 
 ## Öncelikli Sonraki Adımlar (0–7 gün)
 - [ ] Backend: Shipments endpoint’leri için minimal kontrat testleri (happy path + edge).
