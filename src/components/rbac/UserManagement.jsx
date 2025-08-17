@@ -85,7 +85,8 @@ const UserManagement = () => {
       field: 'lastLogin',
       headerName: 'Son Giriş',
       width: 160,
-      valueGetter: (params) => params.value ? new Date(params.value).toLocaleString('tr-TR') : ''
+  // MUI X v7: valueGetter imzası (value, row, column, apiRef)
+  valueGetter: (value) => value ? new Date(value).toLocaleString('tr-TR') : ''
     },
     {
       field: 'actions',

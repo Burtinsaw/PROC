@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Grid, Card, CardContent, TextField, Button, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Stack, Tooltip, TableSortLabel, TablePagination, Dialog, DialogTitle, DialogContent, DialogActions, Autocomplete, Select, MenuItem } from '@mui/material';
+import { Box, Typography, Card, CardContent, TextField, Button, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Stack, Tooltip, TableSortLabel, TablePagination, Dialog, DialogTitle, DialogContent, DialogActions, Autocomplete, Select, MenuItem } from '@mui/material';
 import { Download, Upload, Plus, Pencil, Trash2, Merge } from 'lucide-react';
 import api from '../../services/api';
 import CompanyDialog from './CompanyDialog';

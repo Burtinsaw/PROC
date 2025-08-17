@@ -127,6 +127,12 @@ export const ThemeProvider = ({ children }) => {
 
   // Component overrides (her iki tema için ortak) - token kullanarak
   const componentOverrides = useMemo(() => ({
+    MuiListItemText: {
+      defaultProps: {
+        primaryTypographyProps: { component: 'span' },
+        secondaryTypographyProps: { component: 'span' }
+      }
+    },
     MuiButton: {
       defaultProps: {
         size: preset === 'minimal' ? 'small' : 'medium',
