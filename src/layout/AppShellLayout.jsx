@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { APP_HEADER_HEIGHT } from '../constants/layout';
 import { Box, useMediaQuery } from '@mui/material';
 import { Outlet, useLocation } from 'react-router-dom';
 import AccordionSidebar, { ACC_SIDEBAR_WIDTH } from '../components/nav/AccordionSidebar';
@@ -7,6 +8,8 @@ import NavContextPanel from '../components/nav/NavContextPanel';
 import NavBottomBar from '../components/nav/NavBottomBar';
 import RouteProgress from '../components/common/RouteProgress';
 import AppShellHeader from '../components/nav/AppShellHeader';
+import { useMemo } from 'react';
+import EmailHeaderToolbar from '../components/email/EmailHeaderToolbar';
 import CommandPalette from '../components/nav/CommandPalette';
 import BottomStatusBar from '../components/nav/BottomStatusBar';
 
@@ -89,6 +92,8 @@ export default function AppShellLayout() {
     return ()=> { if(openTimer.current) clearTimeout(openTimer.current); if(closeTimer.current) clearTimeout(closeTimer.current); };
   }, [hoverCandidate, menuCollapsed]);
 
+  const isEmail = useMemo(()=> location.pathname.startsWith('/email'), [location.pathname]);
+  const isEmailCompose = useMemo(()=> location.pathname.startsWith('/email/compose'), [location.pathname]);
   return (
       <Box sx={{ display:'flex', minHeight:'100vh', flexDirection: isMobile? 'column':'row' }}>
       <a href="#app-main" style={{position:'absolute',left:-1000,top:0,background:'#000',color:'#fff',padding:'8px 12px',zIndex:2000}} onFocus={(e)=>{e.currentTarget.style.left='8px';}} onBlur={(e)=>{e.currentTarget.style.left='-1000px';}}>İçeriğe geç</a>
@@ -129,6 +134,11 @@ export default function AppShellLayout() {
           background: 'transparent',
         }}>
           <AppShellHeader />
+          {isEmail && !isEmailCompose && (
+            <Box sx={{ mt: -1.5, mb: 1.5 }}>
+              <EmailHeaderToolbar />
+            </Box>
+          )}
           {/* RouteProgress burada Data Router context'i içindedir */}
           <RouteProgress />
           <CommandPalette open={cmdOpen} onClose={()=> setCmdOpen(false)} />

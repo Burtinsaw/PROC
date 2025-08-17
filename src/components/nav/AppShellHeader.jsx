@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { APP_HEADER_HEIGHT } from '../../constants/layout';
 import { Box, IconButton, Typography, Avatar, Tooltip, Breadcrumbs, Link as MuiLink, Badge, Menu, MenuItem, ListItemIcon } from '@mui/material';
 import { Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -10,7 +11,7 @@ import { useAuth } from '../../contexts/useAuth';
 import { getUnreadCount } from '../../api/messages';
 import { useChat } from '../../contexts/ChatContext';
 import { getCounts as getEmailCounts, harvestContacts } from '../../api/email';
-import EmailHeaderToolbar from '../email/EmailHeaderToolbar';
+// Email özel araç çubuğu header dışına taşındı (layout içinde render edilecek)
 
 function findMatch(pathname) {
   for(const item of navConfig) {
@@ -86,8 +87,6 @@ export default function AppShellHeader() {
   const [notifAnchor, setNotifAnchor] = useState(null);
   const [langAnchor, setLangAnchor] = useState(null);
   const [unread, setUnread] = useState(0);
-  const isEmail = location.pathname.startsWith('/email');
-  const isEmailCompose = location.pathname.startsWith('/email/compose');
   // Poll + socket tetikleyici
   useEffect(() => {
     let mounted = true;
@@ -209,6 +208,8 @@ export default function AppShellHeader() {
     return () => { if (timer) clearInterval(timer); };
   }, []);
 
+  // Sabit üst bar ölçüleri (dashboard ile aynı)
+  const HEADER_MIN_H = APP_HEADER_HEIGHT;
   return (
     <Box
       component="header"
@@ -216,8 +217,8 @@ export default function AppShellHeader() {
         {
           position:'sticky', top:0, zIndex: 1010,
           display:'flex', alignItems:'center', justifyContent:'space-between',
-          height:'auto',
-          px:{ xs:2, sm:2.5, md:3 }, mb:2,
+          minHeight: HEADER_MIN_H,
+          px:{ xs:2, sm:2.5, md:3 }, py: 1, mb:2,
           borderBottom:'1px solid', borderColor: theme.palette.divider,
           background: theme.preset==='aurora'
             ? (theme.palette.mode==='dark'
@@ -232,7 +233,17 @@ export default function AppShellHeader() {
         {!!title && (
           <Typography variant="h6" sx={{ fontWeight:600, letterSpacing:.2, whiteSpace:'nowrap', textOverflow:'ellipsis', overflow:'hidden' }}>{title}</Typography>
         )}
-        <Breadcrumbs aria-label="breadcrumb" sx={{ '& .MuiBreadcrumbs-separator': { mx:.75 }, fontSize:12 }}>
+        <Breadcrumbs
+          aria-label="breadcrumb"
+          sx={{
+            '& .MuiBreadcrumbs-separator': { mx:.75 },
+            fontSize:12,
+            // Tek satır ve taşmaları kes
+            overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+            '& .MuiBreadcrumbs-ol': { overflow:'hidden', whiteSpace:'nowrap' },
+            '& a, & p': { whiteSpace:'nowrap', textOverflow:'ellipsis', overflow:'hidden' }
+          }}
+        >
           {breadcrumbs.map((c,i)=> {
             const Icon = c.icon;
             const last = i === breadcrumbs.length -1;
@@ -258,11 +269,7 @@ export default function AppShellHeader() {
             );
           })}
         </Breadcrumbs>
-        {isEmail && !isEmailCompose && (
-          <Box>
-            <EmailHeaderToolbar />
-          </Box>
-        )}
+  {/* Email toolbar burada değil, layout'ta header altında gösteriliyor */}
       </Box>
       <Box sx={{ display:'flex', alignItems:'center', gap:1, pl:1 }}>
         {/* Fullscreen toggle */}

@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { APP_HEADER_HEIGHT } from '../../constants/layout';
 import { Box, List, ListItemButton, ListItemIcon, ListItemText, Collapse, Tooltip, IconButton, Typography, Stack, Divider, Badge } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { ChevronLeft } from 'lucide-react';
@@ -10,9 +11,8 @@ import BackendStatus from '../BackendStatus';
 import { prefetchRoute } from '../../utils/prefetchRoutes';
 
 export const ACC_SIDEBAR_WIDTH = 260;
-const HEADER_HEIGHT = 56; // align with AppShellHeader height
 
-export default function AccordionSidebar({ leftOffset = 0, topOffset = 56, onCollapse }) {
+export default function AccordionSidebar({ leftOffset = 0, topOffset, onCollapse }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [openGroups, setOpenGroups] = useState({});
@@ -63,7 +63,9 @@ export default function AccordionSidebar({ leftOffset = 0, topOffset = 56, onCol
   className="hide-scrollbar"
       sx={(theme)=>(
         {
-    position:'fixed', top: topOffset, left: leftOffset, bottom:0,
+    position:'fixed',
+  top: topOffset ?? APP_HEADER_HEIGHT,
+    left: leftOffset, bottom:0,
     width: ACC_SIDEBAR_WIDTH, zIndex: 1195,
         borderRight:'1px solid', borderColor: theme.palette.divider,
         background: theme.preset==='aurora'
