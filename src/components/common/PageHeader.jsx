@@ -10,13 +10,15 @@ import { Box, Paper, Stack, Typography, Avatar } from '@mui/material';
 */
 export default function PageHeader({ title, description, right, icon: Icon, compact = false }) {
   return (
-    <Paper
+  <Paper
       elevation={0}
       sx={(t) => ({
         position: 'relative',
         overflow: 'hidden',
-        p: compact ? 1.5 : 2.5,
-        mb: compact ? 1.5 : 3,
+    p: compact ? 1.5 : 2.5,
+    // Üstte ekstra boşluk bırakma; alt boşluğu sınırlı tut
+    mt: 0,
+    mb: compact ? 1.5 : 2,
         borderRadius: 3,
         border: `1px solid ${t.palette.divider}`,
         background:

@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { APP_HEADER_HEIGHT } from '../../constants/layout';
 import { Box, IconButton, Typography, Avatar, Tooltip, Breadcrumbs, Link as MuiLink, Badge, Menu, MenuItem, ListItemIcon } from '@mui/material';
 import { Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -208,8 +207,6 @@ export default function AppShellHeader() {
     return () => { if (timer) clearInterval(timer); };
   }, []);
 
-  // Sabit üst bar ölçüleri (dashboard ile aynı)
-  const HEADER_MIN_H = APP_HEADER_HEIGHT;
   return (
     <Box
       component="header"
@@ -217,8 +214,8 @@ export default function AppShellHeader() {
         {
           position:'sticky', top:0, zIndex: 1010,
           display:'flex', alignItems:'center', justifyContent:'space-between',
-          height: HEADER_MIN_H,
-          px:{ xs:2, sm:2.5, md:3 }, py: 1, mb:2,
+          height: 'var(--app-header-h)',
+          px:{ xs:2, sm:2.5, md:3 }, py: 0, mb: 'var(--app-header-gap)',
           overflow: 'hidden',
           borderBottom:'1px solid', borderColor: theme.palette.divider,
           background: theme.preset==='aurora'
@@ -230,15 +227,15 @@ export default function AppShellHeader() {
         }
       )}
     >
-      <Box sx={{ display:'flex', flexDirection:'column', gap:.25, flex:1, overflow:'hidden' }}>
+  <Box sx={{ display:'flex', flexDirection:'column', gap:.25, flex:1, overflow:'hidden', height:'100%', justifyContent:'center' }}>
         {!!title && (
-          <Typography variant="h6" sx={{ fontWeight:600, letterSpacing:.2, whiteSpace:'nowrap', textOverflow:'ellipsis', overflow:'hidden' }}>{title}</Typography>
+          <Typography variant="h6" sx={{ fontWeight:600, letterSpacing:.2, lineHeight:1.25, whiteSpace:'nowrap', textOverflow:'ellipsis', overflow:'hidden' }}>{title}</Typography>
         )}
         <Breadcrumbs
           aria-label="breadcrumb"
           sx={{
             '& .MuiBreadcrumbs-separator': { mx:.75 },
-            fontSize:12,
+            fontSize:12, lineHeight: 1.2,
             // Tek satır ve taşmaları kes
             overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
             '& .MuiBreadcrumbs-ol': { overflow:'hidden', whiteSpace:'nowrap' },
@@ -272,7 +269,7 @@ export default function AppShellHeader() {
         </Breadcrumbs>
   {/* Email toolbar burada değil, layout'ta header altında gösteriliyor */}
       </Box>
-      <Box sx={{ display:'flex', alignItems:'center', gap:1, pl:1 }}>
+  <Box sx={{ display:'flex', alignItems:'center', gap:1, pl:1, height:'100%' }}>
         {/* Fullscreen toggle */}
         <Tooltip title={isFullscreen ? 'Pencereden çık' : 'Tam ekran'}>
           <IconButton onClick={toggleFullscreen} size="small" color="default">

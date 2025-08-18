@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { APP_HEADER_HEIGHT } from '../../constants/layout';
 import { Box, List, ListItemButton, ListItemIcon, ListItemText, Collapse, Tooltip, IconButton, Typography, Stack, Divider, Badge } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { ChevronLeft } from 'lucide-react';
@@ -64,7 +63,7 @@ export default function AccordionSidebar({ leftOffset = 0, topOffset, onCollapse
       sx={(theme)=>(
         {
     position:'fixed',
-  top: topOffset ?? APP_HEADER_HEIGHT,
+  top: topOffset ?? 'var(--app-header-h)',
     left: leftOffset, bottom:0,
     width: ACC_SIDEBAR_WIDTH, zIndex: 1195,
         borderRight:'1px solid', borderColor: theme.palette.divider,

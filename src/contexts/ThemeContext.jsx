@@ -1,4 +1,5 @@
 import React, { createContext, useState, useMemo, useEffect } from 'react';
+import { APP_HEADER_HEIGHT } from '../constants/layout';
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { baseColors, radii, shadows, typographyScale, lightOverrides, darkOverrides, buildCssVars } from '../theme/designTokens';
 // Context nesnesi
@@ -447,7 +448,15 @@ export const ThemeProvider = ({ children }) => {
         '*, *::before, *::after': { boxSizing: 'border-box' },
         ':root': {
           '--focus-ring-light': '0 0 0 3px rgba(37,99,235,0.35)',
-          '--focus-ring-dark': '0 0 0 3px rgba(96,165,250,0.45)'
+          '--focus-ring-dark': '0 0 0 3px rgba(96,165,250,0.45)',
+          // Uygulama genel header yüksekliği (CSS değişkeni)
+          '--app-header-h': `${typeof APP_HEADER_HEIGHT==='number' ? APP_HEADER_HEIGHT : APP_HEADER_HEIGHT.xs}px`,
+          '--app-header-gap': '16px'
+        },
+        '@media (min-width:600px)': {
+          ':root': {
+            '--app-header-h': `${typeof APP_HEADER_HEIGHT==='number' ? APP_HEADER_HEIGHT : (APP_HEADER_HEIGHT.sm ?? APP_HEADER_HEIGHT.xs)}px`
+          }
         },
   ':root, body': {
           '--motion-ease-standard': 'cubic-bezier(.4,0,.2,1)',
@@ -527,6 +536,10 @@ export const ThemeProvider = ({ children }) => {
           scrollbarWidth: 'none', /* Firefox */
           msOverflowStyle: 'none', /* IE/Edge */
           overscrollBehavior: 'contain',
+        },
+        // Header altındaki ilk içerik bloğunda ekstra tepe boşluğu oluşmasını engelle
+        '#app-main > *:first-child': {
+          marginTop: '0 !important'
         },
         // WebKit tabanlı tarayıcılarda scrollbar'ı tamamen gizle
         '.hide-scrollbar::-webkit-scrollbar': {

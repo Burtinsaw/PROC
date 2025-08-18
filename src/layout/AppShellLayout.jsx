@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { APP_HEADER_HEIGHT } from '../constants/layout';
 import { Box, useMediaQuery } from '@mui/material';
 import { Outlet, useLocation } from 'react-router-dom';
 import AccordionSidebar, { ACC_SIDEBAR_WIDTH } from '../components/nav/AccordionSidebar';
@@ -125,7 +124,7 @@ export default function AppShellLayout() {
           // leave room for rail and accordion sidebar; header alignment handled by header itself
       ml: isMobile? 0 : (menuCollapsed ? `${RAIL_COLLAPSED_WIDTH}px` : `${ACC_SIDEBAR_WIDTH}px`),
           pb: isMobile? '72px': 4,
-          pl: { xs:2, sm:3, md:4 }, pr: { xs:2, sm:3, md:4 }, pt: { xs:2, md:3 },
+          pl: { xs:2, sm:3, md:4 }, pr: { xs:2, sm:3, md:4 },
           transition:'margin var(--motion-duration-base) var(--motion-ease-standard)',
           overflowX: 'hidden',
           overflowY: 'auto',
