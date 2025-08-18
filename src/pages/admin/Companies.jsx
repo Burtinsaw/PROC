@@ -7,6 +7,7 @@ import companyService from '../../services/companyService';
 import CompaniesCsvImportDialog from './CompaniesCsvImportDialog';
 import usePermissions from '../../hooks/usePermissions';
 import { orderedCurrencies, PRIORITY_CURRENCIES } from '../../constants/currencies';
+import { UniversalPageHeader } from '../../components/universal';
 
 export default function Companies(){
   const [rows, setRows] = useState([]);
@@ -93,7 +94,7 @@ export default function Companies(){
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb:2, fontWeight:700 }}>Şirketler</Typography>
+  <UniversalPageHeader title="Şirketler" />
       <Card sx={{ mb:2 }}>
         <CardContent>
           <Grid container spacing={1} alignItems="center">

@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo, useState, lazy, Suspense, useCallback } from 'react';
 import { Box, Stack, Button, CircularProgress, Select, MenuItem, TextField, FormControlLabel, Switch, Chip } from '@mui/material';
-import StatusChip from '../components/common/StatusChip';
+// Universal Components - Theme-aware components
+import { UniversalPageHeader, UniversalSectionCard, UniversalStatusChip } from '../components/universal';
 // DataGrid'i lazy alt bileşene taşıdık
 const ShipmentsGrid = lazy(() => import('../tables/ShipmentsGrid'));
-import PageHeader from '../components/common/PageHeader';
-import MainCard from '../components/common/MainCard';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
 import { exportRowsToCsv } from '../utils/csv';
@@ -57,7 +56,7 @@ export default function Shipments() {
     { field:'trackingNo', headerName:'Takip No', flex:0.8, minWidth:140 },
     { field:'carrier', headerName:'Taşıyıcı', flex:0.8, minWidth:140 },
     { field:'incoterm', headerName:'Incoterm', flex:0.6, minWidth:120 },
-    { field:'status', headerName:'Durum', flex:0.7, minWidth:130, renderCell: ({ value }) => <StatusChip status={value} /> },
+    { field:'status', headerName:'Durum', flex:0.7, minWidth:130, renderCell: ({ value }) => <UniversalStatusChip status={value} /> },
     { field:'openExceptions', headerName:'Açık İstisna', flex:0.5, minWidth:120, valueGetter: ({ value }) => Number(value||0), renderCell: ({ value }) => (
       <span style={{ display:'inline-block', padding:'2px 8px', borderRadius:12, fontSize:12,
         background: value>0 ? 'rgba(245, 124, 0, 0.15)' : 'rgba(76, 175, 80, 0.15)',
@@ -106,7 +105,7 @@ export default function Shipments() {
 
   const clearAll = () => { setQueryDraft(''); setQ(''); setIncotermFilter(''); setOnlyOpen(false); setSearchParams({}, { replace:true }); };
 
-  const chips = (
+  const _CHIPS = (
     <Stack direction="row" spacing={1} sx={{ ml: 1 }}>
       {onlyOpen && <Chip size="small" label="Açık istisna" onDelete={()=> setOnlyOpen(false)} />}
       {!!incotermFilter && <Chip size="small" label={`Incoterm: ${incotermFilter}`} onDelete={()=> setIncotermFilter('')} />}
@@ -116,22 +115,32 @@ export default function Shipments() {
 
   return (
     <Box>
-      <PageHeader title="Sevkiyatlar" description="Takipteki sevkiyatlar" right={
-        <Stack direction="row" spacing={1} alignItems="center">
-          <TextField size="small" placeholder="Ara (takip no, taşıyıcı, durum)" value={queryDraft} onChange={e=>setQueryDraft(e.target.value)} />
-          <Select size="small" value={incotermFilter} displayEmpty onChange={e=>setIncotermFilter(e.target.value)} sx={{ minWidth: 140 }}
+      <UniversalPageHeader 
+        title="Sevkiyatlar" 
+        subtitle="Takipteki sevkiyatlar" 
+        actions={[
+          <TextField key="search" size="small" placeholder="Ara (takip no, taşıyıcı, durum)" value={queryDraft} onChange={e=>setQueryDraft(e.target.value)} />,
+          <Select key="incoterm" size="small" value={incotermFilter} displayEmpty onChange={e=>setIncotermFilter(e.target.value)} sx={{ minWidth: 140 }}
             renderValue={(v)=> v || 'Incoterm (tümü)'}>
             <MenuItem value=""><em>Tümü</em></MenuItem>
             {INCOTERMS.map(i => <MenuItem key={i} value={i}>{i}</MenuItem>)}
-          </Select>
-          <FormControlLabel sx={{ ml: 1 }} control={<Switch size="small" checked={onlyOpen} onChange={(e)=> setOnlyOpen(e.target.checked)} />} label={`Sadece açık istisna (${openCount})`} />
-          <Button onClick={clearAll} variant="text">{`Filtreleri temizle${filterCount ? ` (${filterCount})` : ''}`}</Button>
-          {chips}
-          <Button onClick={exportCsv} variant="outlined">CSV</Button>
-          <Button onClick={load} variant="outlined">Yenile</Button>
+          </Select>,
+          <FormControlLabel key="switch" sx={{ ml: 1 }} control={<Switch size="small" checked={onlyOpen} onChange={(e)=> setOnlyOpen(e.target.checked)} />} label={`Sadece açık istisna (${openCount})`} />,
+          <Button key="clear" onClick={clearAll} variant="text">{`Filtreleri temizle${filterCount ? ` (${filterCount})` : ''}`}</Button>,
+          <Button key="export" onClick={exportCsv} variant="outlined">CSV</Button>,
+          <Button key="refresh" onClick={load} variant="outlined">Yenile</Button>
+        ]}
+      />
+      
+      {(onlyOpen || incotermFilter || q) && (
+        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+          {onlyOpen && <Chip size="small" label="Açık istisna" onDelete={()=> setOnlyOpen(false)} />}
+          {!!incotermFilter && <Chip size="small" label={`Incoterm: ${incotermFilter}`} onDelete={()=> setIncotermFilter('')} />}
+          {!!q && <Chip size="small" label={`Ara: ${q}`} onDelete={()=> { setQueryDraft(''); setQ(''); }} />}
         </Stack>
-      } />
-      <MainCard content={false} sx={{ mt:1 }}>
+      )}
+
+      <UniversalSectionCard content={false}>
         <Box sx={{ height: 520 }}>
           {loading ? (
             <Stack alignItems="center" justifyContent="center" sx={{ height:'100%' }}><CircularProgress /></Stack>
@@ -141,7 +150,7 @@ export default function Shipments() {
             </Suspense>
           )}
         </Box>
-      </MainCard>
+      </UniversalSectionCard>
     </Box>
   );
 }

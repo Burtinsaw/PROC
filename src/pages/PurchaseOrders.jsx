@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense, useMemo } from 'react';
 import { Box, Stack, Button, CircularProgress } from '@mui/material';
-import StatusChip from '../components/common/StatusChip';
-import { lazy, Suspense, useMemo } from 'react';
-import PageHeader from '../components/common/PageHeader';
-import FilterBar from '../components/table/FilterBar';
+
+// Universal Components
+import { UniversalPageHeader, UniversalSectionCard, UniversalFilterBar, UniversalStatusChip } from '../components/universal';
+
+// Other components
 import TableSkeleton from '../components/common/skeletons/TableSkeleton';
 import EmptyState from '../components/common/EmptyState';
-import MainCard from '../components/common/MainCard';
+import ImportDryRunDialog from '../components/common/ImportDryRunDialog';
+
+// Services and utils
 import axios from '../utils/axios';
 import { toast } from 'sonner';
-import ImportDryRunDialog from '../components/common/ImportDryRunDialog';
 import { formatMoney } from '../utils/money';
-import { orderedCurrencies } from '../constants/currencies';
+
 const PurchaseOrdersGrid = lazy(() => import('../tables/PurchaseOrdersGrid'));
 
 export default function PurchaseOrders() {
@@ -45,15 +47,6 @@ export default function PurchaseOrders() {
   };
 
   useEffect(() => { load(); }, []);
-
-  const currencyOptions = useMemo(() => {
-    const uniq = Array.from(new Set(rows.map(r => r.currency).filter(Boolean)));
-    if (uniq.length === 0) return [];
-    const priority = orderedCurrencies();
-    const inPriority = priority.filter(c => uniq.includes(c));
-    const rest = uniq.filter(c => !inPriority.includes(c)).sort();
-    return [...inPriority, ...rest];
-  }, [rows]);
 
   const download = (blob, name) => {
     const url = window.URL.createObjectURL(new Blob([blob]));
@@ -89,13 +82,12 @@ export default function PurchaseOrders() {
   const columns = useMemo(() => [
     { field: 'poNumber', headerName: 'PO No', flex: 0.8, minWidth: 140 },
     { field: 'supplier', headerName: 'Tedarikçi', flex: 1, minWidth: 180 },
-  { field: 'status', headerName: 'Durum', flex: 0.7, minWidth: 130, renderCell: ({ value }) => <StatusChip status={value} /> },
+    { field: 'status', headerName: 'Durum', flex: 0.7, minWidth: 130, renderCell: ({ value }) => <UniversalStatusChip status={value} /> },
     { field: 'currency', headerName: 'PB', flex: 0.4, minWidth: 80 },
     { field: 'totalAmount', headerName: 'Tutar', flex: 0.8, minWidth: 140, renderCell: ({ row }) => formatMoney(row.totalAmount, row.currency||'TRY') },
     { field: 'createdAt', headerName: 'Oluşturma', flex: 0.9, minWidth: 160, valueGetter: ({ value }) => value ? new Date(value).toLocaleString('tr-TR') : '-' }
   ], []);
 
-  const statusOptions = Array.from(new Set(rows.map(r=> r.status).filter(Boolean)));
   const filteredRows = rows.filter(r => {
     if(statusFilter && r.status !== statusFilter) return false;
     if(currencyFilter && r.currency !== currencyFilter) return false;
@@ -106,24 +98,23 @@ export default function PurchaseOrders() {
 
   return (
     <Box>
-      <PageHeader title="Purchase Orders" description="Oluşturulan satın alma siparişleri" right={(
-        <Stack direction="row" gap={1}>
-          <Button onClick={downloadTemplate} variant="outlined" size="small">Şablon</Button>
-          <Button onClick={exportCSV} variant="outlined" size="small">CSV</Button>
-          <Button onClick={triggerImport} variant="contained" size="small">İçe Aktar</Button>
-          <Button onClick={load} variant="contained" size="small">Yenile</Button>
-          <input type="file" ref={fileRef} onChange={onImportFile} accept=".csv,.xlsx" style={{ display:'none' }} />
-        </Stack>
-      )} />
-      <MainCard content={false} sx={{ mt:1 }}>
-        <FilterBar
-          search={{ value: q, onChange: setQ, placeholder: 'Ara...' }}
-          filters={[
-            { key:'status', label:'Durum', options: statusOptions, value: statusFilter, onChange: setStatusFilter },
-            { key:'currency', label:'PB', options: currencyOptions, value: currencyFilter, onChange: setCurrencyFilter }
-          ]}
+      <UniversalPageHeader 
+        title="Purchase Orders" 
+        subtitle="Oluşturulan satın alma siparişleri"
+        actions={[
+          <Button key="template" onClick={downloadTemplate} variant="outlined" size="small">Şablon</Button>,
+          <Button key="csv" onClick={exportCSV} variant="outlined" size="small">CSV</Button>,
+          <Button key="import" onClick={triggerImport} variant="contained" size="small">İçe Aktar</Button>,
+          <Button key="refresh" onClick={load} variant="contained" size="small">Yenile</Button>
+        ]}
+      />
+      <UniversalSectionCard>
+        <UniversalFilterBar
+          search={{ value: q, onChange: setQ, placeholder: 'Search purchase orders...' }}
           onRefresh={load}
           onClear={() => { setQ(''); setStatusFilter(''); setCurrencyFilter(''); }}
+          onFilter={() => {}}
+          onExport={() => {}}
         />
         <Box sx={{ height: 520 }}>
           {loading ? <TableSkeleton rows={8} columns={5} /> : (filteredRows.length===0 ? <EmptyState title="Kayıt yok" description="Filtreleri değiştirin veya veri ekleyin." /> : (
@@ -132,7 +123,8 @@ export default function PurchaseOrders() {
             </Suspense>
           ))}
         </Box>
-      </MainCard>
+      </UniversalSectionCard>
+      <input type="file" ref={fileRef} onChange={onImportFile} accept=".csv,.xlsx" style={{ display:'none' }} />
       <ImportDryRunDialog
         open={dryRunOpen}
         report={dryReport}

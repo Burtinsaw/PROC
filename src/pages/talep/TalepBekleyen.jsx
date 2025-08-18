@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
 import { toast } from 'sonner';
+import { UniversalPageHeader } from '../../components/universal';
 
 export default function TalepBekleyen(){
   const navigate = useNavigate();
@@ -38,15 +39,27 @@ export default function TalepBekleyen(){
     return () => { active = false; };
   }, []);
 
+  const headerActions = [
+    <Button 
+      key="back"
+      size="small" 
+      variant="text" 
+      startIcon={<ArrowLeft size={16} />} 
+      onClick={() => navigate('/talep')}
+    >
+      Geri
+    </Button>
+  ];
+
   return (
-    <Box p={3} sx={{ display:'flex', flexDirection:'column', gap:3 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Stack direction="row" gap={2} alignItems="center">
-          <Button size="small" variant="text" startIcon={<ArrowLeft size={16} />} onClick={()=>navigate('/talep')}>Geri</Button>
-          <Typography variant="h4" fontWeight={600}>Bekleyen Talepler</Typography>
-        </Stack>
-      </Stack>
-      <Paper elevation={0} sx={{ p:2.5, borderRadius:3 }}>
+    <Box>
+      <UniversalPageHeader
+        title="Bekleyen Talepler"
+        subtitle="Onay veya işleme alınmayı bekleyen taleplerin listesi"
+        actions={headerActions}
+      />
+      
+      <Paper elevation={0} sx={{ borderRadius: 3, overflow: 'hidden' }}>
         <TableContainer>
           <Table size="small">
             <TableHead>

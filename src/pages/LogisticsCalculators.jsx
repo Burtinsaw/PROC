@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Stack, TextField, Typography, Divider } from '@mui/material';
-import MainCard from '../components/common/MainCard';
-import PageHeader from '../components/common/PageHeader';
+import { UniversalPageHeader, UniversalSectionCard } from '../components/universal';
 import { calcVolumeM3, calcVolumetricWeightKg, calcDesi, containerTareKg, trailerTareKg, round } from '../utils/logisticsCalc';
 
 export default function LogisticsCalculators(){
@@ -24,8 +23,8 @@ export default function LogisticsCalculators(){
 
   return (
     <Box>
-      <PageHeader title="Lojistik Hesaplamalar" description="Hacim, volumetrik ağırlık, desi ve ekipman darası" />
-      <MainCard sx={{ mt:1 }}>
+      <UniversalPageHeader title="Lojistik Hesaplamalar" subtitle="Hacim, volumetrik ağırlık, desi ve ekipman darası" />
+      <UniversalSectionCard sx={{ mt:1 }}>
         <Stack spacing={2}>
           <Typography variant="subtitle1">Ölçüler (cm) ve Adet</Typography>
           <Stack direction={{ xs:'column', sm:'row' }} spacing={2}>
@@ -46,7 +45,7 @@ export default function LogisticsCalculators(){
           <Divider />
           <Typography variant="body2" color="text.secondary">Not: Bu hesaplamalar yaklaşık değerler içindir. Operasyonel kararlar için taşıyıcı/terminal verilerini doğrulayın.</Typography>
         </Stack>
-      </MainCard>
+      </UniversalSectionCard>
     </Box>
   );
 }

@@ -2,12 +2,12 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Stack, CircularProgress, Typography, Button, Grid, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Switch, FormControlLabel, LinearProgress, Select, MenuItem, Tooltip } from '@mui/material';
 import { Chip } from '@mui/material';
-import StatusChip from '../components/common/StatusChip';
+import UniversalStatusChip from '../components/common/UniversalStatusChip';
 import { lazy, Suspense } from 'react';
 import { Trash2 as DeleteIcon, Plus as AddIcon } from 'lucide-react';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
-import MainCard from '../components/common/MainCard';
+import { UniversalSectionCard } from '../components/universal';
 import NotesPanel from '../components/common/NotesPanel';
 import { useFeatures } from '../contexts/FeatureContext.jsx';
 import { formatMoney } from '../utils/money';
@@ -234,7 +234,7 @@ export default function PurchaseOrderDetail(){
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb:2 }}>
         <Typography variant="h5">PO Detayı</Typography>
         <Stack direction="row" gap={1}>
-          <StatusChip status={po.status} />
+          <UniversalStatusChip status={po.status} />
           {po.status === 'draft' && <Button size="small" onClick={()=>doTransition('send')}>Gönder</Button>}
           {po.status === 'sent' && <Button size="small" onClick={()=>doTransition('confirm')}>Onayla</Button>}
           {['draft','sent','confirmed'].includes(po.status) && <Button size="small" color="error" onClick={()=>doTransition('cancel')}>İptal</Button>}
@@ -245,10 +245,10 @@ export default function PurchaseOrderDetail(){
       </Stack>
       <Grid container spacing={2}>
         <Grid item xs={12} md={4}>
-          <MainCard title="Bilgi">
+          <UniversalSectionCard title="Bilgi">
             <Stack gap={1}>
               <InfoRow k="PO No" v={po.poNumber} />
-              <InfoRow k="Durum" v={<StatusChip status={po.status} />} />
+              <InfoRow k="Durum" v={<UniversalStatusChip status={po.status} />} />
               <InfoRow k="Toplam" v={formatMoney(po.totalAmount, po.currency||'TRY')} />
               <InfoRow k="Tedarikçi" v={po.supplier?.name || '-'} />
               {/* Para birimi (çoklu para birimi özelliği açıksa düzenlenebilir) */}
@@ -285,34 +285,34 @@ export default function PurchaseOrderDetail(){
                 </Box>
               )}
             </Stack>
-          </MainCard>
+          </UniversalSectionCard>
         </Grid>
         <Grid item xs={12} md={8}>
-          <MainCard title="Kalemler" secondary={<Button startIcon={<AddIcon/>} size="small" onClick={()=>{ setItemEditing(null); setItemForm({ description:'', quantity:'1', unitPrice:'0'}); setItemDialogOpen(true); }}>Ekle</Button>} content={false}>
+          <UniversalSectionCard title="Kalemler" secondary={<Button startIcon={<AddIcon/>} size="small" onClick={()=>{ setItemEditing(null); setItemForm({ description:'', quantity:'1', unitPrice:'0'}); setItemDialogOpen(true); }}>Ekle</Button>} content={false}>
             <Box sx={{ height: 310 }}>
               <Suspense fallback={<Stack alignItems="center" justifyContent="center" sx={{ height:'100%' }}><CircularProgress size={22} /></Stack>}>
                 <PurchaseOrderItemsGrid rows={po.items || []} columns={itemColumns} />
               </Suspense>
             </Box>
-          </MainCard>
+          </UniversalSectionCard>
         </Grid>
         <Grid item xs={12} md={4}>
-          <MainCard title="Sevkiyatlar">
+          <UniversalSectionCard title="Sevkiyatlar">
             <Stack gap={1}>
               {po.shipments?.length? po.shipments.map(sh=> <Stack key={sh.id} direction="row" justifyContent="space-between"><Typography>{sh.shipmentNumber}</Typography><Typography color="text.secondary">{sh.status}</Typography></Stack>): <Typography color="text.secondary">Yok</Typography>}
             </Stack>
-          </MainCard>
+          </UniversalSectionCard>
         </Grid>
         <Grid item xs={12} md={6}>
-          <MainCard title="Faturalar">
+          <UniversalSectionCard title="Faturalar">
             <Stack gap={1}>
               {po.invoices?.length? po.invoices.map(inv=> <Stack key={inv.id} direction="row" justifyContent="space-between"><Typography>{inv.invoiceNumber}</Typography><Typography color="text.secondary">{inv.status}</Typography></Stack>): <Typography color="text.secondary">Yok</Typography>}
             </Stack>
-          </MainCard>
+          </UniversalSectionCard>
         </Grid>
         {twm && (
           <Grid item xs={12} md={6}>
-            <MainCard title="Üçlü Mutabakat (PO-GRN-Fatura)">
+            <UniversalSectionCard title="Üçlü Mutabakat (PO-GRN-Fatura)">
               <Stack gap={1}>
                 <Stack direction="row" justifyContent="space-between">
                   <Typography variant="body2">PO Tutarı</Typography>
@@ -324,9 +324,9 @@ export default function PurchaseOrderDetail(){
                 </Stack>
                 <Stack direction="row" gap={1} alignItems="center">
                   <Typography variant="body2">Kontroller:</Typography>
-                  <StatusChip status={twm.checks?.amountMatched? 'ok':'mismatch'} />
+                  <UniversalStatusChip status={twm.checks?.amountMatched? 'ok':'mismatch'} />
                   <Typography variant="caption" color="text.secondary">Tutar</Typography>
-                  <StatusChip status={twm.checks?.qtyMatched? 'ok':'mismatch'} />
+                  <UniversalStatusChip status={twm.checks?.qtyMatched? 'ok':'mismatch'} />
                   <Typography variant="caption" color="text.secondary">Miktar</Typography>
                 </Stack>
                 {!!twm.grn?.meta?.policies && (
@@ -394,11 +394,11 @@ export default function PurchaseOrderDetail(){
                   <Button size="small" variant="outlined" onClick={()=>setTwmOpen(true)}>Detay</Button>
                 </Stack>
               </Stack>
-            </MainCard>
+            </UniversalSectionCard>
           </Grid>
         )}
         <Grid item xs={12} md={6}>
-          <MainCard title="GRN'ler">
+          <UniversalSectionCard title="GRN'ler">
             <Stack gap={1}>
               {grns?.length ? grns.map(g => (
                 <Stack key={g.id} direction="row" justifyContent="space-between" alignItems="center" gap={2}>
@@ -410,7 +410,7 @@ export default function PurchaseOrderDetail(){
                 </Stack>
               )) : <Typography color="text.secondary">Yok</Typography>}
             </Stack>
-          </MainCard>
+          </UniversalSectionCard>
         </Grid>
       </Grid>
       <Grid item xs={12} md={6}>

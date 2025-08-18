@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Switch, FormControlLabel, Paper, Stack, Divider, ToggleButtonGroup, ToggleButton, Select, MenuItem, Button, Slider, Chip, TextField } from '@mui/material';
+import { Box, Typography, Switch, FormControlLabel, Paper, Stack, Divider, Select, MenuItem, Button, Slider, Chip, TextField, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import ContentContainer from '../components/layout/ContentContainer';
-import { useAppTheme } from '../contexts/useAppTheme';
 import { useLanguage } from '../contexts/LanguageContext';
+import ThemeToggle from '../components/theme/ThemeToggle';
 
 export default function Settings() {
-  const { mode, toggleTheme, preset, togglePreset, setPreset, density, setDensity, corner, setCorner } = useAppTheme();
   const { lang, setLang } = useLanguage();
   const [animMode, setAnimMode] = useState('always'); // 'hover' | 'always' | 'off'
   const [showQuickActions, setShowQuickActions] = useState(true);
@@ -69,10 +68,7 @@ export default function Settings() {
     try { localStorage.setItem('reduceMotion', String(v)); } catch { /* ignore */ }
   };
 
-  const onPresetPick = (_, value) => {
-    if (!value) return;
-    setPreset(value);
-  };
+
 
   const onPickBgFile = async (e) => {
     const file = e.target.files?.[0];
@@ -136,36 +132,19 @@ export default function Settings() {
     <ContentContainer>
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Ayarlar</Typography>
       <Stack spacing={2}>
+        {/* Theme Settings - Yeni ThemeToggle Component */}
+        <ThemeToggle showAdvanced={true} />
+
         <Paper variant="outlined" sx={{ p: 2 }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Görünüm</Typography>
-            <Button size="small" variant="text" onClick={()=> window.location.assign('/settings/theme-preview')}>Tema önizleme</Button>
-          </Stack>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Dil</Typography>
           <Divider sx={{ mb: 2 }} />
-          <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'flex-start', sm: 'center' }}>
-            <FormControlLabel
-              control={<Switch checked={mode === 'dark'} onChange={toggleTheme} />}
-              label={`Tema modu: ${mode === 'dark' ? 'Koyu' : 'Açık'}`}
-            />
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap:'wrap' }}>
-              <Typography variant="body2" sx={{ minWidth: 110 }}>Tasarım stili</Typography>
-              <ToggleButtonGroup size="small" exclusive value={preset} onChange={onPresetPick}>
-                <ToggleButton value="classic">Classic</ToggleButton>
-                <ToggleButton value="neo">Neo</ToggleButton>
-                <ToggleButton value="aurora">Aurora</ToggleButton>
-                <ToggleButton value="minimal">Minimal</ToggleButton>
-                <ToggleButton value="contrast">Contrast</ToggleButton>
-              </ToggleButtonGroup>
-              <Button size="small" variant="outlined" onClick={togglePreset}>Sıradaki</Button>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" sx={{ minWidth: 80 }}>Dil</Typography>
-              <Select size="small" value={lang} onChange={(e)=> setLang(e.target.value)}>
-                <MenuItem value="tr">Türkçe</MenuItem>
-                <MenuItem value="en">English</MenuItem>
-              </Select>
-            </Box>
-          </Stack>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" sx={{ minWidth: 80 }}>Dil</Typography>
+            <Select size="small" value={lang} onChange={(e)=> setLang(e.target.value)}>
+              <MenuItem value="tr">Türkçe</MenuItem>
+              <MenuItem value="en">English</MenuItem>
+            </Select>
+          </Box>
         </Paper>
 
         <Paper variant="outlined" sx={{ p: 2 }}>
@@ -268,28 +247,6 @@ export default function Settings() {
           </Stack>
         </Paper>
 
-        <Paper variant="outlined" sx={{ p: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>Yoğunluk & Radius</Typography>
-          <Divider sx={{ mb: 2 }} />
-          <Stack spacing={1.5} direction={{ xs:'column', sm:'row' }} alignItems={{ xs:'flex-start', sm:'center' }}>
-            <Box sx={{ display:'flex', alignItems:'center', gap: 1 }}>
-              <Typography variant="body2" sx={{ minWidth: 120 }}>Yoğunluk</Typography>
-              <ToggleButtonGroup size="small" exclusive value={density} onChange={(_,v)=> v && setDensity(v)}>
-                <ToggleButton value="comfortable">Rahat</ToggleButton>
-                <ToggleButton value="compact">Kompakt</ToggleButton>
-              </ToggleButtonGroup>
-            </Box>
-            <Box sx={{ display:'flex', alignItems:'center', gap: 1 }}>
-              <Typography variant="body2" sx={{ minWidth: 120 }}>Köşe yarıçapı</Typography>
-              <ToggleButtonGroup size="small" exclusive value={corner} onChange={(_,v)=> v && setCorner(v)}>
-                <ToggleButton value="sm">Küçük</ToggleButton>
-                <ToggleButton value="md">Orta</ToggleButton>
-                <ToggleButton value="lg">Büyük</ToggleButton>
-                <ToggleButton value="xl">XL</ToggleButton>
-              </ToggleButtonGroup>
-            </Box>
-          </Stack>
-        </Paper>
       </Stack>
     </ContentContainer>
   );

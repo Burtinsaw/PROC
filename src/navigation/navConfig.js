@@ -16,8 +16,8 @@ const navConfig = [
         id: 'talep-links',
         label: 'İşlemler',
         links: [
-          { id: 'talep-yeni', label: 'Yeni Talep', path: '/talep/yeni', permsAny: ['requests:create'] },
-          { id: 'talep-bekleyen', label: 'Bekleyen Talep', path: '/talep/bekleyen', permsAny: ['requests:read'] },
+          { id: 'talep-yeni', label: 'Yeni Talep Oluştur', path: '/talep/yeni', permsAny: ['requests:create'] },
+          { id: 'talep-bekleyen', label: 'Bekleyen Talepler', path: '/talep/bekleyen', permsAny: ['requests:read'] },
           { id: 'talep-takip', label: 'Talep Takip', path: '/talep/takip', permsAny: ['requests:read'] }
         ]
       }
@@ -32,7 +32,7 @@ const navConfig = [
         id: 'rfq',
         label: 'RFQ',
         links: [
-          { id: 'rfq-olustur', label: 'RFQ Oluştur', path: '/satinalma/rfq/olustur', permsAny: ['requests:create'] },
+          { id: 'rfq-olustur', label: 'Yeni RFQ Oluştur', path: '/satinalma/rfq/olustur', permsAny: ['requests:create'] },
           { id: 'rfq-takip', label: 'RFQ Takip', path: '/satinalma/rfq', permsAny: ['requests:read'] }
         ]
       }
@@ -47,7 +47,7 @@ const navConfig = [
         id: 'lojistik-op',
         label: 'Operasyon',
         links: [
-          { id: 'lojistik-panel', label: 'Panel', path: '/lojistik', permsAny: ['requests:read'] },
+          { id: 'lojistik-panel', label: 'Lojistik Paneli', path: '/lojistik', permsAny: ['requests:read'] },
           { id: 'lojistik-sevkiyat', label: 'Sevkiyat', path: '/shipments', permsAny: ['requests:read'] }
         ]
       }
@@ -62,7 +62,7 @@ const navConfig = [
         id: 'finans-islem',
         label: 'İşlemler',
         links: [
-          { id: 'finans-anasayfa', label: 'Finans', path: '/finance', permsAny: ['requests:read'] }
+          { id: 'finans-anasayfa', label: 'Finans Paneli', path: '/finance', permsAny: ['requests:read'] }
         ]
       }
     ]
@@ -89,7 +89,7 @@ const navConfig = [
   },
   {
     id: 'maestro',
-    label: 'Maestro',
+    label: 'Maestro Sistem',
     icon: Shield,
     path: '/admin/maestro',
     permsAny: ['settings:write']

@@ -123,6 +123,8 @@ export default function AppShellLayout() {
           flex:1,
           // leave room for rail and accordion sidebar; header alignment handled by header itself
       ml: isMobile? 0 : (menuCollapsed ? `${RAIL_COLLAPSED_WIDTH}px` : `${ACC_SIDEBAR_WIDTH}px`),
+          // Header akışı içeride ve sticky; ekstra üst padding içerideki header'ı aşağı itiyordu
+          pt: 0,
           pb: isMobile? '72px': 4,
           pl: { xs:2, sm:3, md:4 }, pr: { xs:2, sm:3, md:4 },
           transition:'margin var(--motion-duration-base) var(--motion-ease-standard)',
@@ -134,7 +136,7 @@ export default function AppShellLayout() {
         }}>
           <AppShellHeader />
           {isEmail && !isEmailCompose && (
-            <Box sx={{ mt: -1.5, mb: 1.5 }}>
+            <Box sx={{ mb: 1.5 }}> {/* Negatif margin kaldırıldı, standart spacing */}
               <EmailHeaderToolbar />
             </Box>
           )}

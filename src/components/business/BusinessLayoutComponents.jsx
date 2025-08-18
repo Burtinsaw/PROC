@@ -12,14 +12,25 @@ import {
   Stack,
   Divider,
   useTheme,
-  alpha
+  alpha,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Grid
 } from '@mui/material';
 import { 
   MoreVert,
   TrendingUp,
   TrendingDown,
   TrendingFlat,
-  Circle
+  Circle,
+  Search,
+  FilterList,
+  GetApp,
+  Refresh
 } from '@mui/icons-material';
 
 // Business Metric Card Component
@@ -302,6 +313,7 @@ export const BusinessPageHeader = ({
 // Business Section Card
 export const BusinessSectionCard = ({ 
   title, 
+  subtitle,
   children, 
   headerActions,
   dense = true,
@@ -318,9 +330,16 @@ export const BusinessSectionCard = ({
         borderColor: 'divider'
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, fontSize: dense ? '0.8125rem' : '0.875rem' }}>
-            {title}
-          </Typography>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, fontSize: dense ? '0.8125rem' : '0.875rem' }}>
+              {title}
+            </Typography>
+            {subtitle && (
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.25 }}>
+                {subtitle}
+              </Typography>
+            )}
+          </Box>
           {headerActions && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               {headerActions}
@@ -335,10 +354,121 @@ export const BusinessSectionCard = ({
   );
 };
 
+// Business Form Components
+export const BusinessFormComponents = ({ dense = true }) => {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: dense ? 2 : 3 }}>
+      {/* Quick Filters */}
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: dense ? 1 : 1.5, 
+        flexWrap: 'wrap' 
+      }}>
+        <TextField
+          size="small"
+          placeholder="Search RFQs..."
+          sx={{ minWidth: 200 }}
+          InputProps={{
+            startAdornment: <Search sx={{ fontSize: 18, mr: 1, color: 'text.secondary' }} />
+          }}
+        />
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Status</InputLabel>
+          <Select defaultValue="" label="Status">
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="draft">Draft</MenuItem>
+            <MenuItem value="pending">Pending</MenuItem>
+            <MenuItem value="approved">Approved</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Priority</InputLabel>
+          <Select defaultValue="" label="Priority">
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="low">Low</MenuItem>
+            <MenuItem value="medium">Medium</MenuItem>
+            <MenuItem value="high">High</MenuItem>
+          </Select>
+        </FormControl>
+        <Button 
+          variant="outlined" 
+          size="small" 
+          startIcon={<FilterList />}
+        >
+          Filters
+        </Button>
+        <Button 
+          variant="outlined" 
+          size="small" 
+          startIcon={<GetApp />}
+        >
+          Export
+        </Button>
+        <IconButton size="small">
+          <Refresh />
+        </IconButton>
+      </Box>
+      
+      {/* Quick Actions */}
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        <Chip 
+          label="Quick Create" 
+          color="primary" 
+          size="small" 
+          clickable
+          sx={{ fontWeight: 500 }}
+        />
+        <Chip 
+          label="Bulk Import" 
+          variant="outlined" 
+          size="small" 
+          clickable
+        />
+        <Chip 
+          label="Templates" 
+          variant="outlined" 
+          size="small" 
+          clickable
+        />
+      </Box>
+    </Box>
+  );
+};
+
+// Business Navigation Dock Bar
+export const BusinessNavigationDockBar = () => {
+  const theme = useTheme();
+  
+  return (
+    <Box sx={{ 
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: 48,
+      bgcolor: theme.palette.primary.main,
+      color: theme.palette.primary.contrastText,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderTop: 1,
+      borderColor: alpha(theme.palette.common.white, 0.2),
+      zIndex: 1100
+    }}>
+      <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
+        Enterprise Procurement Suite • Business Theme Active
+      </Typography>
+    </Box>
+  );
+};
+
 export default {
   BusinessMetricCard,
   BusinessTableContainer,
   BusinessStatusChip,
   BusinessPageHeader,
-  BusinessSectionCard
+  BusinessSectionCard,
+  BusinessFormComponents,
+  BusinessNavigationDockBar
 };

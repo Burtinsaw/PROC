@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Stack, Typography, Button } from '@mui/material';
 
 /* ActionBar: Generic bulk/action toolbar */
-export default function ActionBar({ count = 0, actions = [], anchor = 'top' }) {
+export default function ActionBar({ count = 0, actions = [] }) {
   if (!count) return null;
   return (
     <Box
@@ -19,8 +19,7 @@ export default function ActionBar({ count = 0, actions = [], anchor = 'top' }) {
             : '0 8px 32px -8px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06)'
         } : { bgcolor: 'action.hover', borderBottom: 1, borderColor: 'divider' };
         return {
-          position:'sticky',
-          [anchor]:0,
+          position:'relative', // Fixed: sticky'den relative'e değiştirdik 
           zIndex: 5,
           display:'flex', alignItems:'center', justifyContent:'space-between',
           px:2, py:1,

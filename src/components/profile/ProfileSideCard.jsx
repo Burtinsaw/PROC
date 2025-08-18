@@ -4,7 +4,7 @@ import { Link as RouterLink } from 'react-router-dom';
 
 export default function ProfileSideCard({ user }) {
   return (
-    <Paper sx={{ p: 2, position: 'sticky', top: 76 }}>
+    <Paper sx={{ p: 2, position: 'sticky', top: 'calc(var(--app-header-h) + var(--app-header-gap))' }}>
       <Stack alignItems="center" spacing={1.5}>
         <Avatar src={user?.avatarUrl} sx={{ width: 84, height: 84 }}>
           {(user?.firstName?.[0] || user?.username?.[0] || 'U').toUpperCase()}

@@ -2,9 +2,7 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Stack, Typography, Chip, Divider, Grid, CircularProgress, Button, Paper, TextField, MenuItem, Select, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
 import AuthContext from '../contexts/AuthContext';
-import MainCard from '../components/common/MainCard';
-import PageHeader from '../components/common/PageHeader';
-import StatusChip from '../components/common/StatusChip';
+import { UniversalPageHeader, UniversalSectionCard, UniversalStatusChip } from '../components/universal';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
 import NotesPanel from '../components/common/NotesPanel';
@@ -151,12 +149,15 @@ export default function ShipmentDetail() {
 
   return (
     <Box>
-      <PageHeader
+      <UniversalPageHeader
         title={`Sevkiyat ${code}`}
-        description="Zaman çizelgesi, çoklu bacaklar ve özel durumlar"
-        right={<Stack direction="row" spacing={1}><Button onClick={()=>navigate(-1)} variant="outlined">Geri</Button><Button onClick={loadAll} variant="contained">Yenile</Button></Stack>}
+        subtitle="Zaman çizelgesi, çoklu bacaklar ve özel durumlar"
+        actions={[
+          <Button key="back" onClick={()=>navigate(-1)} variant="outlined">Geri</Button>,
+          <Button key="refresh" onClick={loadAll} variant="contained">Yenile</Button>
+        ]}
       />
-      <MainCard sx={{ mt: 1 }}>
+      <UniversalSectionCard sx={{ mt: 1 }}>
         {loading && (
           <Stack alignItems="center" justifyContent="center" sx={{ py: 6 }}>
             <CircularProgress />
@@ -172,7 +173,7 @@ export default function ShipmentDetail() {
               <Grid item xs={12} md={8}>
                 <Stack direction="row" spacing={1} alignItems="center">
                   <Typography variant="h5">{code}</Typography>
-                  <StatusChip status={shipment.status} />
+                  <UniversalStatusChip status={shipment.status} />
                   {shipment.incoterm && <Chip size="small" label={shipment.incoterm} />}
                 </Stack>
                 <Typography variant="body2" color="text.secondary">Taşıyıcı: {shipment.carrier || '-'}</Typography>
@@ -397,7 +398,7 @@ export default function ShipmentDetail() {
         {!loading && !shipment && (
           <Typography variant="body2" color="text.secondary">Kayıt bulunamadı.</Typography>
         )}
-      </MainCard>
+      </UniversalSectionCard>
     </Box>
   );
 }

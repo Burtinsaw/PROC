@@ -4,16 +4,30 @@ import Grid from '@mui/material/Grid';
 import ContentContainer from '../components/layout/ContentContainer';
 import ElevatedCard from '../components/ui/ElevatedCard';
 import { ShoppingCart, Clock, CheckCircle, Users, Package, MoreVertical, Plus, Filter, Download, ListTodo, ClipboardCheck, FileText, Sparkles, Search } from 'lucide-react';
-import { keyframes } from '@mui/system';
 import { lazy, Suspense } from 'react';
 const MonthlyTrendsChart = lazy(() => import('../components/charts/MonthlyTrendsChart'));
 const CategoryDistributionPie = lazy(() => import('../components/charts/CategoryDistributionPie'));
 import { useTheme } from '@mui/material/styles';
 import MetricCard from '../components/common/MetricCard';
-import StatusChip from '../components/common/StatusChip';
+import UniversalStatusChip from '../components/common/UniversalStatusChip';
 import { useAuth } from '../contexts/useAuth';
+import { useAppTheme } from '../contexts/useAppTheme';
+import { UniversalPageHeader } from '../components/universal';
 
-// Sample Data
+// Business Components
+import { 
+  BusinessMetricCard, 
+  BusinessSectionCard 
+} from '../components/business/BusinessLayoutComponents';
+
+// Procurement Components
+import { 
+  ProcurementMetricCard, 
+  ProcurementSectionCard,
+  ProcurementFilterBar 
+} from '../components/procurement/ProcurementComponents';
+
+// Sample Data - Theme-aware colors
 const dashboardStats = [
   {
     title: 'Toplam Talepler',
@@ -21,8 +35,7 @@ const dashboardStats = [
     change: '+12.5%',
     changeType: 'increase',
     icon: ShoppingCart,
-    color: '#3182ce',
-    bgColor: '#ebf8ff'
+    color: 'primary.main' // Theme-aware color
   },
   {
     title: 'Bekleyen Onaylar',
@@ -30,8 +43,7 @@ const dashboardStats = [
     change: '-8.2%',
     changeType: 'decrease',
     icon: Clock,
-    color: '#ed8936',
-    bgColor: '#fef5e7'
+    color: 'warning.main' // Theme-aware color
   },
   {
     title: 'Tamamlanan',
@@ -39,8 +51,7 @@ const dashboardStats = [
     change: '+15.3%',
     changeType: 'increase',
     icon: CheckCircle,
-    color: '#38a169',
-    bgColor: '#f0fff4'
+    color: 'success.main' // Theme-aware color
   },
   {
     title: 'Aktif Tedarikçiler',
@@ -48,8 +59,7 @@ const dashboardStats = [
     change: '+4.1%',
     changeType: 'increase',
     icon: Users,
-    color: '#805ad5',
-    bgColor: '#faf5ff'
+    color: 'secondary.main' // Theme-aware color
   }
 ];
 
@@ -99,6 +109,7 @@ const recentRequests = [
 
 const ProcurementDashboard = () => {
   const { user } = useAuth();
+  const { preset } = useAppTheme(); // Business preset'i kontrol etmek için
   const [anchorEl, setAnchorEl] = useState(null);
   const [todos, setTodos] = useState([
     { id: 't1', title: 'Onay bekleyen talepler', hint: 'Talep listesi', link: '/talep/bekleyen', icon: Clock, done: false },
@@ -143,19 +154,12 @@ const ProcurementDashboard = () => {
 
   const toggleTodo = (id) => setTodos(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
 
-  // Quick actions animation control: 'hover' | 'always' | 'off' via localStorage 'qaAnimMode'
-  const [animMode, setAnimMode] = useState('hover');
-  useEffect(() => {
-    try { const m = localStorage.getItem('qaAnimMode'); if (m === 'always' || m === 'hover' || m === 'off') setAnimMode(m); }
-  catch { /* localStorage not available (SSR or privacy mode) -> ignore */ }
-  }, []);
-  const [animateQA, setAnimateQA] = useState(false); // hover state (only used when animMode === 'hover')
   const [showQuickActions, setShowQuickActions] = useState(true);
   const [reduceMotion, setReduceMotion] = useState(false);
-  const [dashboardBg, setDashboardBg] = useState('');
-  const [bgBlur, setBgBlur] = useState(0);
-  const [bgDim, setBgDim] = useState(0);
-  const [applyGlobal, setApplyGlobal] = useState(false);
+  const [_DASHBOARD_BG, setDashboardBg] = useState('');
+  const [_BG_BLUR, setBgBlur] = useState(0);
+  const [_BG_DIM, setBgDim] = useState(0);
+  const [_APPLY_GLOBAL, setApplyGlobal] = useState(false);
   useEffect(()=>{
     try {
       const sqa = localStorage.getItem('showQuickActions');
@@ -189,11 +193,6 @@ const ProcurementDashboard = () => {
     window.addEventListener('appConfigUpdated', onCfg);
     return () => window.removeEventListener('appConfigUpdated', onCfg);
   }, []);
-  const twinkle = keyframes`
-    0% { transform: scale(1); opacity: .7; }
-    50% { transform: scale(1.18); opacity: 1; }
-    100% { transform: scale(1); opacity: .7; }
-  `;
 
   return (
     <ContentContainer
@@ -201,50 +200,57 @@ const ProcurementDashboard = () => {
   sx={{ position: 'relative', minHeight: 'calc(100vh - 64px)', gap: 4 }}
     >
       {/* Header Section */}
-  <Box sx={{ width: '100%' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main', mb: 1 }}>
-              Satın Alma Kontrol Paneli
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              {(() => {
-                const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.name || user?.username || '';
-                return `${greeting}${fullName ? `, ${fullName}` : ''}! İşte bugünkü özet bilgileriniz.`;
-              })()}
-            </Typography>
-          </Box>
-          {/* Hızlı İşlemler - dashboard'a özel kompakt bar */}
-          {showQuickActions && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: (t)=> t.palette.mode==='dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', p: 1, borderRadius: 2 }}
-          onMouseEnter={() => { if (animMode === 'hover') setAnimateQA(true); }} onMouseLeave={() => { if (animMode === 'hover') setAnimateQA(false); }}>
-        <Box aria-hidden sx={{ color:'warning.main', display:'flex', alignItems:'center', mr: .5, animation: (animMode === 'always' || (animMode === 'hover' && animateQA)) ? `${twinkle} ${reduceMotion? '2.6s' : '1.6s'} ease-in-out infinite` : 'none' }}>
-              <Sparkles size={16} />
-            </Box>
-            <Button size="small" variant="outlined" startIcon={<Plus size={16} />} onClick={()=> window.location.assign('/talep/yeni')}>Yeni Talep</Button>
-            <Button size="small" variant="outlined" startIcon={<FileText size={16} />} onClick={()=> window.location.assign('/satinalma/rfq/olustur')}>Hızlı RFQ</Button>
-            <Button size="small" variant="outlined" startIcon={<Package size={16} />} onClick={()=> window.location.assign('/purchase-orders')}>PO&apos;lar</Button>
-            <Button size="small" variant="outlined" startIcon={<ListTodo size={16} />} onClick={()=> window.location.assign('/talep/bekleyen')}>Onaylar</Button>
-            <Button size="small" variant="outlined" startIcon={<Search size={16} />} onClick={()=> window.location.assign('/suppliers')}>Tedarikçi Ara</Button>
-          </Box>
-          )}
-
-        </Box>
+      <Box sx={{ width: '100%' }}>
+        <UniversalPageHeader
+          title="Satın Alma Kontrol Paneli"
+          subtitle={(() => {
+            const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.name || user?.username || '';
+            return `${greeting}${fullName ? `, ${fullName}` : ''}! İşte bugünkü özet bilgileriniz.`;
+          })()}
+          actions={showQuickActions ? [
+            <Button key="new-request" size="small" variant="outlined" startIcon={<Plus size={16} />} onClick={()=> window.location.assign('/talep/yeni')}>Yeni Talep</Button>,
+            <Button key="rfq" size="small" variant="outlined" startIcon={<FileText size={16} />} onClick={()=> window.location.assign('/satinalma/rfq/olustur')}>Hızlı RFQ</Button>,
+            <Button key="po" size="small" variant="outlined" startIcon={<Package size={16} />} onClick={()=> window.location.assign('/purchase-orders')}>PO'lar</Button>,
+            <Button key="approvals" size="small" variant="outlined" startIcon={<ListTodo size={16} />} onClick={()=> window.location.assign('/talep/bekleyen')}>Onaylar</Button>,
+            <Button key="search" size="small" variant="outlined" startIcon={<Search size={16} />} onClick={()=> window.location.assign('/suppliers')}>Tedarikçi Ara</Button>
+          ] : []}
+        />
       </Box>
 
       {/* Stats Cards */}
-  <Grid container rowSpacing={2} columnSpacing={2} sx={{ mb: 1, width: '100%', mx: 0 }}>
+      <Grid container rowSpacing={2} columnSpacing={2} sx={{ mb: 1, width: '100%', mx: 0 }}>
         {dashboardStats.map((stat, index) => (
           <Grid size={{ xs: 6, sm: 3, md: 3, lg: 3 }} key={index}>
-            <MetricCard
-              icon={stat.icon}
-              value={stat.value}
-              label={stat.title}
-              delta={stat.change}
-              deltaType={stat.changeType}
-              color={stat.color}
-              bgColor={stat.bgColor}
-            />
+            {preset === 'business' ? (
+              <BusinessMetricCard
+                title={stat.title}
+                value={stat.value}
+                subtitle="Bu ay"
+                trend={stat.changeType === 'increase' ? 'up' : 'down'}
+                trendValue={stat.change}
+                status={stat.changeType === 'increase' ? 'success' : 'warning'}
+                dense
+              />
+            ) : preset === 'procurement' ? (
+              <ProcurementMetricCard
+                title={stat.title}
+                value={stat.value}
+                subtitle="Current month"
+                trend={stat.changeType === 'increase' ? 'up' : 'down'}
+                trendValue={stat.change}
+                status={stat.changeType === 'increase' ? 'success' : 'warning'}
+                dense
+              />
+            ) : (
+              <MetricCard
+                icon={stat.icon}
+                value={stat.value}
+                label={stat.title}
+                delta={stat.change}
+                deltaType={stat.changeType}
+                color={stat.color}
+              />
+            )}
           </Grid>
         ))}
       </Grid>
@@ -330,7 +336,7 @@ const ProcurementDashboard = () => {
                             <Typography variant="body1" sx={{ fontWeight: 600 }}>
                               {request.title}
                             </Typography>
-                            <StatusChip status={request.status} />
+                            <UniversalStatusChip status={request.status} />
                           </Box>
                         }
                         secondary={

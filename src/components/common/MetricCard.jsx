@@ -13,19 +13,24 @@ import NeutralBadge from './NeutralBadge';
     - color (icon color)
     - bgColor (avatar background)
 */
-export default function MetricCard({ icon: Icon, value, label, delta, deltaType, color, bgColor }) {
+export default function MetricCard({ icon: Icon, value, label, delta, deltaType, color }) {
   const deltaColor = deltaType === 'increase' ? 'success' : deltaType === 'decrease' ? 'error' : 'neutral';
+  
   return (
     <ElevatedCard padding={2} sx={{ height: '100%' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
         <Avatar
-          sx={{
-            bgcolor: bgColor || 'primary.light',
-            color: color || 'primary.main',
+          sx={(theme) => ({
+            bgcolor: theme.palette.mode === 'dark' 
+              ? 'rgba(255,255,255,0.08)' 
+              : 'rgba(0,0,0,0.04)',
+            color: color || theme.palette.primary.main,
             width: 56,
             height: 56,
-            boxShadow: '0 0 0 4px rgba(0,0,0,0.04)'
-          }}
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 0 0 1px rgba(255,255,255,0.08)'
+              : '0 0 0 1px rgba(0,0,0,0.08)'
+          })}
         >
           {Icon && <Icon size={26} />}
         </Avatar>

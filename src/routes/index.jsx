@@ -16,6 +16,8 @@ import AuthLogin from '../sections/auth/jwt/AuthLogin';
 const ForgotPassword = lazy(() => import('../pages/authentication/ForgotPassword'));
 const ResetPassword = lazy(() => import('../pages/authentication/ResetPassword'));
 const Register = lazy(() => import('../pages/authentication/Register'));
+const BusinessThemeShowcase = lazy(() => import('../pages/BusinessThemeShowcase'));
+const ProcurementThemeShowcase = lazy(() => import('../pages/ProcurementThemeShowcase'));
 import GuestRoute from './GuestRoute';
 const NotFound = lazy(() => import('../pages/NotFound'));
 import PrivateRoute from './PrivateRoute';
@@ -126,6 +128,8 @@ const router = createBrowserRouter([
       },
   { path: 'settings', element: <Settings /> },
   { path: 'settings/theme-preview', element: <Suspense fallback={<Loader />}><ThemePreview /></Suspense> },
+  { path: 'business-theme-demo', element: <Suspense fallback={<Loader />}><BusinessThemeShowcase /></Suspense> },
+  { path: 'procurement-theme-demo', element: <Suspense fallback={<Loader />}><ProcurementThemeShowcase /></Suspense> },
   { path: 'settings/email', element: <Suspense fallback={<Loader />}><EmailSettingsHub /></Suspense> },
   { path: 'settings/email/legacy', element: <Suspense fallback={<Loader />}><EmailSettings /></Suspense> },
   { path: 'settings/email/personal', element: <Suspense fallback={<Loader />}><EmailSettingsPersonal /></Suspense> },

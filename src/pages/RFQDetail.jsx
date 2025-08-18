@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button, Chip, CircularProgress, Grid, Paper, Stack, Tab, Tabs, Typography, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, Switch, FormControlLabel, Slider, Avatar } from '@mui/material';
-import StatusChip from '../components/common/StatusChip';
+import UniversalStatusChip from '../components/common/UniversalStatusChip';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
-import MainCard from '../components/common/MainCard';
+import { UniversalSectionCard } from '../components/universal';
 import NotesPanel from '../components/common/NotesPanel';
 
 export default function RFQDetail() {
@@ -132,7 +132,7 @@ export default function RFQDetail() {
 					<Typography variant="h5" fontWeight={600}>{rfq.title}</Typography>
 					<Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
 						<Chip size="small" label={rfq.rfqNumber} />
-						{rfq.status && <StatusChip status={rfq.status} />}
+						{rfq.status && <UniversalStatusChip status={rfq.status} />}
 						{rfq.sentAt && <Chip size="small" variant="outlined" label={`Gönderildi: ${new Date(rfq.sentAt).toLocaleDateString('tr-TR')}`} />}
 						{rfq.awardedSupplierId && <Chip size="small" color="success" variant="outlined" label="Ödüllendirildi" />}
 					</Stack>
@@ -163,7 +163,7 @@ export default function RFQDetail() {
 					)}
 				</Stack>
 			</Paper>
-			<MainCard content sx={{ p: 0, borderRadius: 3, overflow: 'hidden' }}>
+			<UniversalSectionCard content sx={{ p: 0, borderRadius: 3, overflow: 'hidden' }}>
 				<Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ px: 2, pt: 1, borderBottom: t => `1px solid ${t.palette.divider}` }}>
 					<Tab label="Genel" />
 					<Tab label="Karşılaştırma" onClick={async () => {
@@ -368,7 +368,7 @@ export default function RFQDetail() {
 						)}
 					</Box>
 				)}
-			</MainCard>
+			</UniversalSectionCard>
 		</Box>
 	);
 }

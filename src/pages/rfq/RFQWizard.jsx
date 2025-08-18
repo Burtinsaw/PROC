@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import FileUpload from '../../components/FileUpload';
 import KeyValueEditor from '../../components/KeyValueEditor';
+import { UniversalPageHeader } from '../../components/universal';
 
 const steps = ['Kalemler', 'Tedarikçiler', 'Şartlar', 'Önizleme'];
 
@@ -59,13 +60,18 @@ export default function RFQWizard(){
   };
 
   return (
-    <Box p={3} display="flex" flexDirection="column" gap={3}>
-      <Typography variant="h4" fontWeight={600}>Yeni RFQ Sihirbazı</Typography>
-      <Stepper activeStep={step} alternativeLabel>
-        {steps.map((label) => (<Step key={label}><StepLabel>{label}</StepLabel></Step>))}
-      </Stepper>
+    <Box>
+      <UniversalPageHeader
+        title="Yeni RFQ Sihirbazı"
+        subtitle="Adım adım RFQ oluşturma rehberi"
+      />
+      
+      <Box px={3}>
+        <Stepper activeStep={step} alternativeLabel sx={{ mb: 3 }}>
+          {steps.map((label) => (<Step key={label}><StepLabel>{label}</StepLabel></Step>))}
+        </Stepper>
 
-      <Paper sx={{ p:2.5, borderRadius:3, minHeight:260 }}>
+        <Paper sx={{ p:2.5, borderRadius:3, minHeight:260 }}>
         {/* Basit placeholder içerikleri: ileride ayrı komponentlere bölünecek */}
         {step === 0 && (
           <Stack gap={2}>
@@ -192,6 +198,7 @@ export default function RFQWizard(){
           <Button variant="contained" onClick={submit} disabled={submitting}>{submitting? 'Oluşturuluyor...':'Oluştur'}</Button>
         )}
       </Stack>
+      </Box>
     </Box>
   );
 }

@@ -132,65 +132,14 @@ export const ThemeProvider = ({ children }) => {
   return (
     <ThemeContext.Provider value={value}>
       <MuiThemeProvider theme={theme}>
-        {/* Inject CSS variables and global background globally */}
+        {/* Inject CSS variables globally */}
         <style>
           {`:root {
             ${Object.entries(theme.cssVars || {})
               .map(([key, value]) => `${key}: ${value};`)
               .join('\n')}
-          }
-          
-          /* Global background consistency - Updates with theme changes */
-          html, body {
-            background-color: ${theme.palette.background.default} !important;
-            color: ${theme.palette.text.primary} !important;
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            transition: background-color 0.3s ease, color 0.3s ease;
-          }
-          
-          /* Ensure root container fills viewport and matches theme */
-          #root {
-            min-height: 100vh;
-            background-color: ${theme.palette.background.default};
-            transition: background-color 0.3s ease;
-          }
-          
-          /* AppShell layout background consistency */
-          .MuiBox-root[data-testid="app-shell"],
-          .app-shell-container {
-            background-color: ${theme.palette.background.default};
-            min-height: 100vh;
-          }
-          
-          /* Content containers background consistency */
-          .content-container,
-          .main-content,
-          .dashboard-container {
-            background-color: transparent;
-          }
-          
-          /* Scroll area background consistency - prevents flashing */
-          .simplebar-content,
-          .simplebar-wrapper {
-            background-color: transparent !important;
-          }
-          
-          /* Overscroll areas - when user scrolls beyond content */
-          body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: ${theme.palette.background.default};
-            z-index: -10000;
-            pointer-events: none;
           }`}
         </style>
-        <GlobalBackgroundApplier />
         {children}
       </MuiThemeProvider>
     </ThemeContext.Provider>

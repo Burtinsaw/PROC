@@ -1,8 +1,6 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { Box, Stack, Button, CircularProgress, Chip, Grid, Typography, Card, CardContent } from '@mui/material';
-import StatusChip from '../components/common/StatusChip';
-import PageHeader from '../components/common/PageHeader';
-import MainCard from '../components/common/MainCard';
+import { UniversalPageHeader, UniversalSectionCard, UniversalStatusChip } from '../components/universal';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
 const FinanceGrid = lazy(() => import('../tables/FinanceGrid'));
@@ -42,9 +40,9 @@ export default function Finance() {
   };
   const columns = [
     { field:'invoiceNumber', headerName:'Fatura No', flex:0.9, minWidth:160 },
-  { field:'status', headerName:'Durum', flex:0.7, minWidth:130, renderCell: ({ value }) => <StatusChip status={value} /> },
-  { field:'parasutStatus', headerName:'Parasut', flex:0.6, minWidth:120, renderCell: ({ value }) => <StatusChip status={value} /> },
-  { field:'syncStatus', headerName:'Sync', flex:0.6, minWidth:120, renderCell: ({ row }) => <StatusChip status={row.syncStatus} title={row.syncError||''} /> },
+    { field:'status', headerName:'Durum', flex:0.7, minWidth:130, renderCell: ({ value }) => <UniversalStatusChip status={value} /> },
+    { field:'parasutStatus', headerName:'Parasut', flex:0.6, minWidth:120, renderCell: ({ value }) => <UniversalStatusChip status={value} /> },
+    { field:'syncStatus', headerName:'Sync', flex:0.6, minWidth:120, renderCell: ({ row }) => <UniversalStatusChip status={row.syncStatus} title={row.syncError||''} /> },
     { field:'subtotal', headerName:'Ara Toplam', flex:0.6, minWidth:130 },
     { field:'tax', headerName:'Vergi', flex:0.5, minWidth:110 },
     { field:'total', headerName:'Toplam', flex:0.6, minWidth:130 },
@@ -54,7 +52,11 @@ export default function Finance() {
   ];
   return (
     <Box>
-  <PageHeader title="Finans" description="Fatura listesi" right={<Button onClick={load} variant="outlined">Yenile</Button>} />
+      <UniversalPageHeader 
+        title="Finans" 
+        subtitle="Fatura listesi" 
+        actions={[<Button key="refresh" onClick={load} variant="outlined">Yenile</Button>]} 
+      />
       {summary && (
         <Grid container spacing={2} sx={{ mt:0.5 }}>
           <Grid item xs={12} sm={6} md={3}>
@@ -107,7 +109,7 @@ export default function Finance() {
           </Grid>
         </Grid>
       )}
-      <MainCard content={false} sx={{ mt:1 }}>
+      <UniversalSectionCard content={false} sx={{ mt:1 }}>
         <Box sx={{ height:520 }}>
           {loading ? (
             <Stack alignItems="center" justifyContent="center" sx={{ height:'100%' }}><CircularProgress /></Stack>
@@ -117,7 +119,7 @@ export default function Finance() {
             </Suspense>
           )}
         </Box>
-      </MainCard>
+      </UniversalSectionCard>
     </Box>
   );
 }

@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, CircularProgress, Divider, Grid, Paper, Stack, Tooltip, Typography } from '@mui/material';
-import StatusChip from '../components/common/StatusChip';
+import UniversalStatusChip from '../components/common/UniversalStatusChip';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
-import MainCard from '../components/common/MainCard';
+import { UniversalSectionCard } from '../components/universal';
 import NotesPanel from '../components/common/NotesPanel';
 
 export default function RequestDetail() {
@@ -57,7 +57,7 @@ export default function RequestDetail() {
 				<Paper elevation={0} sx={{ p: 2, mb: 2, borderRadius: 2, border: (t) => `1px solid ${t.palette.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
 				<Typography variant="h5">Talep Detayı</Typography>
 					<Stack direction="row" gap={1} alignItems="center">
-					{talep.durum && <StatusChip status={talep.durum} />}
+					{talep.durum && <UniversalStatusChip status={talep.durum} />}
 						<Tooltip title={talep.durum === 'Onaylandı' ? 'Satınalma siparişi oluştur' : 'Önce talebi onaylayın'}>
 							<span>
 								<Button size="small" variant="contained" color="secondary" disabled={talep.durum !== 'Onaylandı'} onClick={async ()=>{
@@ -130,7 +130,7 @@ export default function RequestDetail() {
 
 					<Grid container spacing={2}>
 						<Grid item xs={12} md={6}>
-							<MainCard title="Bilgi">
+							<UniversalSectionCard title="Bilgi">
 								<Stack gap={1}>
 									{infoRows.map((row) => (
 										<Stack key={row.k} direction="row" justifyContent="space-between">
@@ -139,11 +139,11 @@ export default function RequestDetail() {
 										</Stack>
 									))}
 								</Stack>
-							</MainCard>
+							</UniversalSectionCard>
 						</Grid>
 
 						<Grid item xs={12} md={6}>
-							<MainCard title="Ürünler">
+							<UniversalSectionCard title="Ürünler">
 								<Stack gap={1}>
 									{talep.urunler?.length ? talep.urunler.map((u) => (
 										<Stack key={u.id} direction="row" justifyContent="space-between">
@@ -152,7 +152,7 @@ export default function RequestDetail() {
 										</Stack>
 									)) : <Typography color="text.secondary">Kayıt bulunamadı</Typography>}
 								</Stack>
-							</MainCard>
+							</UniversalSectionCard>
 						</Grid>
 						<Grid item xs={12}>
 							<NotesPanel base="/talepler" entityId={id} />

@@ -1,17 +1,20 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback, lazy, Suspense } from 'react';
 import { Box, Button, CircularProgress, MenuItem, Paper, Select, Stack, TextField, Typography, Chip } from '@mui/material';
-import StatusChip from '../components/common/StatusChip';
-import PriorityChip from '../components/common/PriorityChip';
-import { lazy, Suspense } from 'react';
-import axios from '../utils/axios';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import MainCard from '../components/common/MainCard';
-import PageHeader from '../components/common/PageHeader';
-import FilterBar from '../components/table/FilterBar';
+
+// Universal Components - Theme-aware components  
+import { UniversalPageHeader, UniversalSectionCard, UniversalFilterBar, UniversalStatusChip } from '../components/universal';
+
+// Other components
+import PriorityChip from '../components/common/PriorityChip';
 import ActionBar from '../components/common/ActionBar';
 import TableSkeleton from '../components/common/skeletons/TableSkeleton';
 import EmptyState from '../components/common/EmptyState';
+
+// Services
+import axios from '../utils/axios';
+import { toast } from 'sonner';
+
 const RequestsGrid = lazy(() => import('../tables/RequestsGrid'));
 
 export default function Requests() {
@@ -62,21 +65,11 @@ export default function Requests() {
 	// Re-load on server-side filters change
 	useEffect(() => { load(); }, [load]);
 
-	const statusOptions = useMemo(() => {
-		const set = new Set(rows.map((r) => r.durum).filter(Boolean));
-		return Array.from(set);
-	}, [rows]);
-
-	const priorityOptions = useMemo(() => {
-		const set = new Set(rows.map((r) => r.oncelik).filter(Boolean));
-		return Array.from(set);
-	}, [rows]);
-
 	const columns = useMemo(() => [
 		{ field: 'talepNo', headerName: 'Talep No', flex: 0.7, minWidth: 120 },
 		{ field: 'talepBasligi', headerName: 'Başlık', flex: 1.4, minWidth: 220 },
 		{ field: 'firma', headerName: 'Firma', flex: 1, minWidth: 180 },
-		{ field: 'durum', headerName: 'Durum', flex: 0.7, minWidth: 120, renderCell: (p)=> <StatusChip status={p.value} /> },
+		{ field: 'durum', headerName: 'Durum', flex: 0.7, minWidth: 120, renderCell: (p)=> <UniversalStatusChip status={p.value} /> },
 		{ field: 'oncelik', headerName: 'Öncelik', flex: 0.6, minWidth: 110, renderCell: (p)=> <PriorityChip value={p.value} /> },
 		{ field: 'proformaNumber', headerName: 'Proforma', flex: 0.9, minWidth: 150, renderCell: (p) => (
 			p.value ? (
@@ -128,39 +121,36 @@ export default function Requests() {
 	};
 
 		return (
-				<Box>
-						<PageHeader
-							title="Talepler"
-							description="Tüm satın alma taleplerini görüntüleyin ve yönetin."
-							right={<Button variant="contained" onClick={() => navigate('/requests/new')}>Yeni Talep</Button>}
-						/>
+			<Box>
+				<UniversalPageHeader
+					title="Procurement Requests"
+					subtitle="View and manage all procurement requests efficiently"
+					actions={[
+						<Button key="new" variant="contained" onClick={() => navigate('/requests/new')}>New Request</Button>
+					]}
+				/>
 
-				<MainCard content={false} sx={{ overflow: 'hidden' }}>
-					<FilterBar
-						search={{ value: q, onChange: setQ, placeholder: 'Ara...' }}
-						filters={[
-							{ key: 'status', label: 'Durum', options: statusOptions, value: statusFilter, onChange: setStatusFilter },
-							{ key: 'priority', label: 'Öncelik', options: priorityOptions, value: priorityFilter, onChange: setPriorityFilter },
-							{ key: 'hasProforma', label: 'Proforma', options: ['Var','Yok'], value: hasProforma,
-								onChange: (v)=> setHasProforma(v === 'Var' ? 'true' : v === 'Yok' ? 'false' : '') }
-						]}
+				<UniversalSectionCard title="Request Management">
+					<UniversalFilterBar
+						search={{ value: q, onChange: setQ, placeholder: 'Search requests...' }}
 						onRefresh={load}
 						onClear={() => { setQ(''); setStatusFilter(''); setPriorityFilter(''); setHasProforma(''); }}
-						right={<Button size="small" variant="outlined" onClick={() => navigate('/requests/new')}>Yeni</Button>}
+						onFilter={() => {}}
+						onExport={() => {}}
 					/>
 					<ActionBar
 						count={selectionModel.length}
 						actions={[
-							{ key: 'approve', label: 'Toplu Onayla', color: 'success', onClick: () => runBulk('approve'), loading: bulkLoading },
-							{ key: 'reject', label: 'Toplu Reddet', color: 'warning', variant: 'outlined', onClick: () => runBulk('reject'), loading: bulkLoading },
-							{ key: 'delete', label: 'Toplu Sil', color: 'error', variant: 'outlined', onClick: () => runBulk('delete'), loading: bulkLoading }
+							{ key: 'approve', label: 'Bulk Approve', color: 'success', onClick: () => runBulk('approve'), loading: bulkLoading },
+							{ key: 'reject', label: 'Bulk Reject', color: 'warning', variant: 'outlined', onClick: () => runBulk('reject'), loading: bulkLoading },
+							{ key: 'delete', label: 'Bulk Delete', color: 'error', variant: 'outlined', onClick: () => runBulk('delete'), loading: bulkLoading }
 						]}
 					/>
 					<Box sx={{ height: 560, width: '100%' }}>
 						{loading ? (
 							<TableSkeleton rows={8} columns={7} />
 						) : filteredRows.length === 0 ? (
-							<EmptyState title="Kayıt bulunamadı" description="Filtreleri değiştirin veya yeni talep oluşturun." actionLabel="Yeni Talep" onAction={()=> navigate('/requests/new')} />
+							<EmptyState title="No requests found" description="Change filters or create a new request." actionLabel="New Request" onAction={()=> navigate('/requests/new')} />
 						) : (
 							<Suspense fallback={<TableSkeleton rows={8} columns={7} />}>
 								<RequestsGrid
@@ -173,7 +163,7 @@ export default function Requests() {
 							</Suspense>
 						)}
 					</Box>
-				</MainCard>
+				</UniversalSectionCard>
 			</Box>
 		);
 	}

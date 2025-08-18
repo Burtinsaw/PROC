@@ -5,20 +5,14 @@ import { lazy, Suspense } from 'react';
 const UniqueVisitorCard = lazy(() => import('../components/UniqueVisitorCard'));
 const MonthlyBarChart = lazy(() => import('../components/MonthlyBarChart'));
 import { Gift, MessageSquare, Settings } from 'lucide-react';
+import { UniversalPageHeader } from '../components/universal';
 
 const MantisDashboard = () => {
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
       {/* Page Title */}
       <Grid size={12}>
-        <Typography variant="h4" sx={{ 
-          mb: 3, 
-          fontWeight: 600,
-          color: 'text.primary',
-          fontSize: '1.75rem'
-        }}>
-          Dashboard
-        </Typography>
+        <UniversalPageHeader title="Dashboard" />
       </Grid>
 
       {/* Statistics Cards */}

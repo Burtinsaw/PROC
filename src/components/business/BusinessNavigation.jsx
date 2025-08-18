@@ -421,8 +421,8 @@ export const BusinessTopBar = ({
         px: 2,
         gap: 2,
         position: 'sticky',
-        top: 0,
-        zIndex: theme.zIndex.appBar
+        top: 'var(--app-header-h)',
+        zIndex: theme.zIndex.appBar - 1
       }}
     >
       {/* Menu Toggle */}

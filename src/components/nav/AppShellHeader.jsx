@@ -79,13 +79,29 @@ export default function AppShellHeader() {
   const { user, logout } = useAuth();
   const chat = useChat();
 
-  const title = useMemo(()=> findMatch(location.pathname), [location.pathname]);
+  const [customTitle, setCustomTitle] = useState(null);
+  const autoTitle = useMemo(()=> findMatch(location.pathname), [location.pathname]);
+  const title = customTitle || autoTitle;
   const breadcrumbs = useMemo(()=> buildCrumbs(location.pathname), [location.pathname]);
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
   const [lang, setLang] = useState(()=> localStorage.getItem('lang') || 'TR');
   const [notifAnchor, setNotifAnchor] = useState(null);
   const [langAnchor, setLangAnchor] = useState(null);
   const [unread, setUnread] = useState(0);
+
+  // Listen for custom page title changes
+  useEffect(() => {
+    const handleTitleChange = (e) => {
+      setCustomTitle(e.detail?.title || null);
+    };
+    window.addEventListener('page-title-changed', handleTitleChange);
+    return () => window.removeEventListener('page-title-changed', handleTitleChange);
+  }, []);
+
+  // Reset custom title on route change
+  useEffect(() => {
+    setCustomTitle(null);
+  }, [location.pathname]);
   // Poll + socket tetikleyici
   useEffect(() => {
     let mounted = true;
@@ -210,32 +226,37 @@ export default function AppShellHeader() {
   return (
     <Box
       component="header"
+      data-app-shell-header
       sx={(theme)=>(
         {
           position:'sticky', top:0, zIndex: 1010,
           display:'flex', alignItems:'center', justifyContent:'space-between',
           height: 'var(--app-header-h)',
-          px:{ xs:2, sm:2.5, md:3 }, py: 0, mb: 'var(--app-header-gap)',
+          minHeight: 'var(--app-header-h)', // Sabit minimum yükseklik
+          maxHeight: 'var(--app-header-h)', // Sabit maksimum yükseklik
+          // Tutarlı iç boşluk – tüm sayfalarda aynı
+          px: 2, py: 0, 
+          mb: 0, // Margin kaldırıldı - sayfa header'ları kendi spacing'lerini kontrol edecek
           overflow: 'hidden',
           borderBottom:'1px solid', borderColor: theme.palette.divider,
-          background: theme.preset==='aurora'
-            ? (theme.palette.mode==='dark'
-                ? 'linear-gradient(90deg, rgba(17,24,39,0.85), rgba(17,24,39,0.65))'
-                : 'linear-gradient(90deg, rgba(255,255,255,0.85), rgba(255,255,255,0.6))')
-            : theme.palette.background.default,
-          backdropFilter: theme.preset==='aurora'? 'blur(18px)' : undefined
+          // Solid arka plan – sayfaya göre değişen alt içerik yansımalarını önler
+          background: theme.palette.background.paper,
+          backdropFilter: undefined,
+          // Tüm sayfalarda aynı pozisyon ve spacing
+          marginTop: 0,
+          paddingTop: 0
         }
       )}
     >
   <Box sx={{ display:'flex', flexDirection:'column', gap:.25, flex:1, overflow:'hidden', height:'100%', justifyContent:'center' }}>
         {!!title && (
-          <Typography variant="h6" sx={{ fontWeight:600, letterSpacing:.2, lineHeight:1.25, whiteSpace:'nowrap', textOverflow:'ellipsis', overflow:'hidden' }}>{title}</Typography>
+          <Typography component="div" sx={{ fontSize: 16, fontWeight:600, letterSpacing:.2, lineHeight:1.25, whiteSpace:'nowrap', textOverflow:'ellipsis', overflow:'hidden' }}>{title}</Typography>
         )}
-        <Breadcrumbs
+    <Breadcrumbs
           aria-label="breadcrumb"
           sx={{
-            '& .MuiBreadcrumbs-separator': { mx:.75 },
-            fontSize:12, lineHeight: 1.2,
+      '& .MuiBreadcrumbs-separator': { mx:.5 },
+      fontSize:12, lineHeight: 1.2,
             // Tek satır ve taşmaları kes
             overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
             '& .MuiBreadcrumbs-ol': { overflow:'hidden', whiteSpace:'nowrap' },
@@ -345,4 +366,39 @@ export default function AppShellHeader() {
       </Box>
     </Box>
   );
+}
+
+// Geliştirme modunda: Üstte ikinci bir sticky/fixed header var mı, tespit et ve uyar (debug amaçlı)
+if (import.meta?.env?.DEV) {
+  try {
+    // İlk render sonrası kısa bir gecikme ile kontrol et
+    setTimeout(() => {
+      const headers = Array.from(document.querySelectorAll('header, .MuiAppBar-root, [role="banner"]'))
+        .filter(el => !el.hasAttribute('data-app-shell-header')) // kendi header’ımızı hariç tut
+        .filter(el => {
+          const cs = window.getComputedStyle(el);
+          const pos = cs.position;
+          // sticky/fixed ve tepeye yapışık olanları hedefle
+          const topPx = parseFloat(cs.top || '0');
+          return (pos === 'sticky' || pos === 'fixed') && (isNaN(topPx) ? false : topPx <= 0.5);
+        });
+      if (headers.length > 0) {
+        // Gözle ayırt edilebilir olsun diye geçici outline uygula
+        headers.forEach((el, idx) => {
+          try {
+            el.style.outline = '2px dashed #ef4444';
+            el.style.outlineOffset = '-2px';
+            el.setAttribute('data-duplicate-sticky-header', 'true');
+            el.setAttribute('title', (el.getAttribute('title') || '') + ` [duplicate-sticky-header#${idx+1}]`);
+          } catch {
+            /* no-op: style injection best-effort */
+          }
+        });
+        // Konsola detay yaz
+        console.warn('[AppShellHeader] Üstte ikinci bir sticky/fixed header tespit edildi:', headers);
+      }
+    }, 100);
+  } catch {
+    /* no-op: detection is best-effort in dev */
+  }
 }

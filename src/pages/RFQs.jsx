@@ -1,16 +1,19 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { Box, Button, Chip, CircularProgress, Paper, Stack, Tooltip } from '@mui/material';
-import StatusChip from '../components/common/StatusChip';
-import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from '../utils/axios';
-import { toast } from 'sonner';
-import MainCard from '../components/common/MainCard';
-import PageHeader from '../components/common/PageHeader';
+
+// Universal Components - Theme-aware components  
+import { UniversalPageHeader, UniversalSectionCard, UniversalFilterBar, UniversalStatusChip } from '../components/universal';
+
+// Other components
 import TableSkeleton from '../components/common/skeletons/TableSkeleton';
 import EmptyState from '../components/common/EmptyState';
-import FilterBar from '../components/table/FilterBar';
 import usePermissions from '../hooks/usePermissions';
+
+// Services
+import axios from '../utils/axios';
+import { toast } from 'sonner';
+
 const RFQsGrid = lazy(() => import('../tables/RFQsGrid'));
 
 export default function RFQs() {
@@ -77,7 +80,7 @@ export default function RFQs() {
 		{ field: 'rfqNumber', headerName: 'No', flex: 0.6, minWidth: 120 },
 		{ field: 'title', headerName: 'Başlık', flex: 1.2, minWidth: 200 },
 		{ field: 'talepTitle', headerName: 'Talep', flex: 1, minWidth: 180 },
-		{ field: 'status', headerName: 'Durum', flex: 0.6, minWidth: 120, renderCell: (p) => <StatusChip status={p.value} /> },
+		{ field: 'status', headerName: 'Durum', flex: 0.6, minWidth: 120, renderCell: (p) => <UniversalStatusChip status={p.value} /> },
 		{ field: 'sla', headerName: 'SLA', flex: 0.7, minWidth: 140, sortable: false, filterable: false, valueGetter: (params)=> params.row.slaOverdue ? 'overdue' : (params.row.slaMinutes ?? null), renderCell: (p)=>{
 			const r = p.row;
 			if(r.slaOverdue) return <Chip size="small" color="error" label="Gecikmiş" />;
@@ -111,31 +114,31 @@ export default function RFQs() {
 	}, [rows, q]);
 
 		return (
-				<Box>
-					<PageHeader
-								title="RFQ Listesi"
-								description="Teklif taleplerinizi takip edin ve detaylarına erişin."
-								right={
-									<Stack direction="row" gap={1}>
-										<Tooltip title={canCreate? 'Yeni RFQ':'Yetki yok'}>
-											<span><Button disabled={!canCreate} variant="contained" onClick={()=>navigate('/satinalma/rfq/olustur')}>Yeni RFQ</Button></span>
-										</Tooltip>
-										<Button variant="outlined" onClick={load}>Yenile</Button>
-									</Stack>
-								}
-							/>
+			<Box>
+				<UniversalPageHeader
+					title="RFQ Management"
+					subtitle="Manage your Request for Quotations and track approval processes"
+					actions={[
+						<Tooltip key="create" title={canCreate? 'Create New RFQ':'No permission'}>
+							<span><Button disabled={!canCreate} variant="contained" onClick={()=>navigate('/satinalma/rfq/olustur')}>New RFQ</Button></span>
+						</Tooltip>,
+						<Button key="refresh" variant="outlined" onClick={load}>Refresh</Button>
+					]}
+				/>
 
-				<MainCard content={false} sx={{ overflow: 'hidden' }}>
-					<FilterBar
-						search={{ value: q, onChange: setQ, placeholder: 'Ara...' }}
+				<UniversalSectionCard title="RFQ List">
+					<UniversalFilterBar
+						search={{ value: q, onChange: setQ, placeholder: 'Search RFQs...' }}
 						onRefresh={load}
 						onClear={()=> setQ('')}
+						onFilter={() => {}}
+						onExport={() => {}}
 					/>
 					<Box sx={{ height: 560, width: '100%' }}>
 						{loading ? (
 							<TableSkeleton rows={8} columns={7} />
 						) : filteredRows.length===0 ? (
-							<EmptyState title="Kayıt yok" description="Aramanızı değiştirin veya yeni RFQ oluşturun." />
+							<EmptyState title="No Records" description="Change your search or create a new RFQ." />
 						) : (
 							<Suspense fallback={<TableSkeleton rows={8} columns={7} />}>
 								<RFQsGrid
@@ -146,7 +149,7 @@ export default function RFQs() {
 							</Suspense>
 						)}
 					</Box>
-				</MainCard>
+				</UniversalSectionCard>
 			</Box>
 		);
 }

@@ -52,7 +52,8 @@ import {
   Upload
 } from 'lucide-react';
 import { useAppTheme } from '../contexts/useAppTheme';
-import StatusChip from '../components/common/StatusChip';
+import UniversalStatusChip from '../components/common/UniversalStatusChip';
+import { UniversalPageHeader } from '../components/universal';
 import { researchSuppliersFull, getResearchJobs, getResearchJob, markResearchSaved, setResearchSavedMap, getResearchSavedMap } from '../api/suppliers';
 import { createCompany } from '../api/companies';
 import { checkCompanyDuplicate } from '../api/companies';
@@ -269,14 +270,7 @@ const SupplierManagement = () => {
       minHeight: 'calc(100vh - 64px)',
       width: '100%'
     }}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ mb: 1, fontWeight: 700, color: theme.colors.primary }}>
-          Tedarikçi Yönetimi
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Tedarikçilerinizi yönetin, performanslarını takip edin ve yeni tedarikçiler ekleyin
-        </Typography>
-      </Box>
+  <UniversalPageHeader title="Tedarikçi Yönetimi" subtitle="Tedarikçilerinizi yönetin, performanslarını takip edin ve yeni tedarikçiler ekleyin" />
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid
           size={{
@@ -835,7 +829,7 @@ const SupplierManagement = () => {
                       <TableCell>{job.targetCountry || '-'}</TableCell>
                       <TableCell>{job.provider || '-'}</TableCell>
                       <TableCell>
-                        <StatusChip status={(job.status || '').toLowerCase()} />
+                        <UniversalStatusChip status={(job.status || '').toLowerCase()} />
                       </TableCell>
                       <TableCell>{job.suggestionsCount ?? '-'}</TableCell>
                       <TableCell>{job.durationMs ?? '-'}</TableCell>
@@ -1154,7 +1148,7 @@ const SupplierManagement = () => {
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <StatusChip status={supplierStatusMap[supplier.status] || supplier.status} />
+                    <UniversalStatusChip status={supplierStatusMap[supplier.status] || supplier.status} />
                   </TableCell>
                   <TableCell align="center">
                     <Box sx={{ display: 'flex', gap: 0.5 }}>

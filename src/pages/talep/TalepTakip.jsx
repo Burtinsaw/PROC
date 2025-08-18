@@ -6,6 +6,7 @@ import axios from '../../utils/axios';
 import { talepExtractFromText, talepExtractFromFiles, talepGetStaging, talepCommitStaging } from '../../api/talep';
 import { toast } from 'sonner';
 import useAllowedCurrencies from '../../hooks/useAllowedCurrencies';
+import { UniversalPageHeader } from '../../components/universal';
 
 const steps = ['Oluşturuldu','İnceleme','Onay','Satınalma','Tamamlandı'];
 
@@ -187,21 +188,17 @@ export default function TalepTakip(){
     finally{ setBusy(false); }
   };
   return (
-    <Box p={3} sx={{ display:'flex', flexDirection:'column', gap:3 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Stack direction="row" gap={2} alignItems="center">
-          <Button size="small" variant="text" startIcon={<ArrowLeft size={16} />} onClick={()=>navigate('/talep')}>Geri</Button>
-          <Typography variant="h4" fontWeight={600}>Talep Takip</Typography>
-        </Stack>
-        <Stack direction="row" gap={1} alignItems="center">
-          {poForTalep?.id ? (
-            <Button variant="outlined" size="small" onClick={()=> navigate(`/purchase-orders/${poForTalep.id}`)}>PO’ya git</Button>
-          ) : (
-            <Button variant="contained" size="small" disabled={!talep || (String(talep?.durum||'').toLowerCase()!=='onaylandı'.toLowerCase())} onClick={openCreateDialog}>PO oluştur</Button>
-          )}
-        </Stack>
-      </Stack>
-      <Paper elevation={0} sx={{ p:3, borderRadius:3, display:'flex', flexDirection:'column', gap:3 }}>
+    <Box sx={{ display:'flex', flexDirection:'column', gap:3 }}>
+      <UniversalPageHeader
+        title="Talep Takip"
+        actions={[
+          <Button key="back" size="small" variant="text" startIcon={<ArrowLeft size={16} />} onClick={()=>navigate('/talep')}>Geri</Button>,
+          poForTalep?.id
+            ? <Button key="goto-po" variant="outlined" size="small" onClick={()=> navigate(`/purchase-orders/${poForTalep.id}`)}>PO’ya git</Button>
+            : <Button key="create-po" variant="contained" size="small" disabled={!talep || (String(talep?.durum||'').toLowerCase()!=='onaylandı'.toLowerCase())} onClick={openCreateDialog}>PO oluştur</Button>
+        ]}
+      />
+  <Paper elevation={0} sx={{ p:3, borderRadius:3, display:'flex', flexDirection:'column', gap:3 }}>
         <Stack direction="row" alignItems="center" gap={1}>
           <Typography variant="subtitle1" fontWeight={600}>{id}</Typography>
           {talep?.proformaNumber && (

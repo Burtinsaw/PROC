@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Grid, Stack, Typography, Card, CardContent, List, ListItem, ListItemText, Chip, Button, CircularProgress } from '@mui/material';
-import PageHeader from '../components/common/PageHeader';
-import MainCard from '../components/common/MainCard';
+import { UniversalPageHeader, UniversalSectionCard } from '../components/universal';
+import usePageTitle from '../hooks/usePageTitle';
 import axios from '../utils/axios';
 import { toast } from 'sonner';
 
@@ -17,6 +17,8 @@ function StatCard({ title, value, color = 'primary' }){
 }
 
 export default function LogisticsDashboard(){
+  usePageTitle('Lojistik Dashboard', 'Operasyon, sevkiyat ve kritik uyarılar');
+  
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const [notifications, setNotifications] = useState([]);
@@ -45,7 +47,11 @@ export default function LogisticsDashboard(){
 
   return (
     <Box>
-      <PageHeader title="Lojistik Paneli" description="Operasyon, sevkiyat ve kritik uyarılar" right={<Button onClick={loadAll} variant="outlined">Yenile</Button>} />
+      <UniversalPageHeader 
+        title="Lojistik Paneli" 
+        subtitle="Operasyon, sevkiyat ve kritik uyarılar" 
+        actions={[<Button key="refresh" onClick={loadAll} variant="outlined">Yenile</Button>]} 
+      />
 
       {loading && (
         <Stack alignItems="center" justifyContent="center" sx={{ height: 160 }}>
@@ -56,15 +62,15 @@ export default function LogisticsDashboard(){
       {!loading && (
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, md: 8 }}>
-            <MainCard title="Durum Özeti">
+            <UniversalSectionCard title="Durum Özeti">
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}><StatCard title="Açık Sevkiyat" value={stats?.openShipments} /></Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}><StatCard title="Bekleyen Ödeme" value={stats?.pendingPrepayments} color="warning.main" /></Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}><StatCard title="Kritik Uyarı" value={stats?.criticalAlerts} color="error.main" /></Grid>
               </Grid>
-            </MainCard>
+            </UniversalSectionCard>
 
-            <MainCard title="Takvim Olayları" sx={{ mt: 2 }}>
+            <UniversalSectionCard title="Takvim Olayları" sx={{ mt: 2 }}>
               {events.length === 0 ? (
                 <Typography color="text.secondary">Kayıt yok</Typography>
               ) : (
@@ -82,10 +88,10 @@ export default function LogisticsDashboard(){
                   ))}
                 </List>
               )}
-            </MainCard>
+            </UniversalSectionCard>
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
-            <MainCard title={`Bildirimler ${notifications.length ? '('+notifications.filter(n=>!n.isRead).length+' okunmamış)' : ''}`}>
+            <UniversalSectionCard title={`Bildirimler ${notifications.length ? '('+notifications.filter(n=>!n.isRead).length+' okunmamış)' : ''}`}>
               {notifications.length === 0 ? (
                 <Typography color="text.secondary">Bildirim yok</Typography>
               ) : (
@@ -103,7 +109,7 @@ export default function LogisticsDashboard(){
                   ))}
                 </List>
               )}
-            </MainCard>
+            </UniversalSectionCard>
           </Grid>
         </Grid>
       )}

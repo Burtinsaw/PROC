@@ -1,5 +1,6 @@
 // Uygulama genelinde üst bar yüksekliği tek kaynaktan yönetilsin
-// Responsive nesne: xs ve sm üzeri için farklı değerler
-export const APP_HEADER_HEIGHT = { xs: 64, sm: 72 };
+// Tüm ekran boyutları için sabit ve tutarlı yükseklik
+export const APP_HEADER_HEIGHT = { xs: 68, sm: 68 }; // Standart 68px tüm cihazlarda
 
-// İleride gerekirse sayısal erişim veya CSS değişken üretimi eklenebilir
+// Header gap standart değeri (16px)
+export const APP_HEADER_GAP = 16;
